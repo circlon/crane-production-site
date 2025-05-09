@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
+import { VideoModal } from "./video-modal"
 
 interface Frame {
   id: number
@@ -65,6 +66,7 @@ function FrameComponent({
   const [isAnimating, setIsAnimating] = useState(false)
   const [showVkVideo, setShowVkVideo] = useState(false)
   const [vkIframeVisible, setVkIframeVisible] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   
   // Устанавливаем начальный кадр при загрузке видео
   useEffect(() => {
@@ -83,7 +85,7 @@ function FrameComponent({
         })
       }
       // Если есть VK видео и оно уже было запущено, показываем его
-      if (vkVideoSrc && showVkVideo) {
+      if (vkVideoSrc && showVkVideo && !isModalOpen) {
         setVkIframeVisible(true);
       }
     } else {
@@ -92,178 +94,201 @@ function FrameComponent({
       
       // Скрываем iframe VK видео, но не сбрасываем состояние showVkVideo
       // Это позволит сохранить позицию воспроизведения
-      if (vkVideoSrc && showVkVideo) {
+      if (vkVideoSrc && showVkVideo && !isModalOpen) {
         setVkIframeVisible(false);
       }
     }
-  }, [isHovered, showVkVideo, vkVideoSrc]);
+  }, [isHovered, showVkVideo, vkVideoSrc, isModalOpen]);
 
   const handleFrameClick = () => {
     if (vkVideoSrc) {
+      // Открываем модальное окно вместо воспроизведения в текущем месте
+      setIsModalOpen(true);
       setShowVkVideo(true);
+      // Когда модальное окно открыто, мы скрываем встроенный iframe
+      setVkIframeVisible(false);
+    }
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    // После закрытия модального окна нам нужно обновить состояние
+    // встроенного iframe на основе состояния isHovered
+    if (isHovered && vkVideoSrc && showVkVideo) {
       setVkIframeVisible(true);
     }
   }
 
   return (
-    <div
-      className={`relative ${className}`}
-      style={{
-        width,
-        height,
-        transition: "width 0.3s ease-in-out, height 0.3s ease-in-out",
-      }}
-    >
-      <div 
-        className="relative w-full h-full overflow-hidden"
-        onClick={handleFrameClick}
+    <>
+      <div
+        className={`relative ${className}`}
+        style={{
+          width,
+          height,
+          transition: "width 0.3s ease-in-out, height 0.3s ease-in-out",
+        }}
       >
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{
-            zIndex: 1,
-            transition: "all 0.3s ease-in-out",
-            padding: showFrame ? `${borderThickness}px` : "0",
-            width: showFrame ? `${borderSize}%` : "100%",
-            height: showFrame ? `${borderSize}%` : "100%",
-            left: showFrame ? `${(100 - borderSize) / 2}%` : "0",
-            top: showFrame ? `${(100 - borderSize) / 2}%` : "0",
-          }}
+        <div 
+          className="relative w-full h-full overflow-hidden"
+          onClick={handleFrameClick}
         >
           <div
-            className="w-full h-full overflow-hidden relative bg-black"
+            className="absolute inset-0 flex items-center justify-center"
             style={{
-              transform: `scale(${mediaSize})`,
-              transformOrigin: "center",
-              transition: "transform 0.3s ease-in-out",
+              zIndex: 1,
+              transition: "all 0.3s ease-in-out",
+              padding: showFrame ? `${borderThickness}px` : "0",
+              width: showFrame ? `${borderSize}%` : "100%",
+              height: showFrame ? `${borderSize}%` : "100%",
+              left: showFrame ? `${(100 - borderSize) / 2}%` : "0",
+              top: showFrame ? `${(100 - borderSize) / 2}%` : "0",
             }}
           >
-            {videoError ? (
-              <div className="absolute inset-0 flex items-center justify-center text-white">
-                <p>Video not available</p>
-              </div>
-            ) : (
-              <>
-                {showVkVideo && vkVideoSrc ? (
-                  <div 
-                    className="absolute inset-0 z-20"
-                    style={{ opacity: vkIframeVisible ? 1 : 0, pointerEvents: vkIframeVisible ? 'auto' : 'none', transition: 'opacity 0.3s ease-in-out' }}
-                  >
-                    <iframe
-                      src={vkVideoSrc}
-                      width="100%"
-                      height="100%"
-                      className="w-full h-full"
-                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
-                      frameBorder="0"
-                      allowFullScreen
-                    />
-                  </div>
-                ) : null}
-                <video
-                  className="w-full h-full object-cover"
-                  src={video}
-                  loop
-                  muted
-                  playsInline
-                  ref={videoRef}
-                  onError={() => setVideoError(true)}
-                  style={{ opacity: showVkVideo && vkIframeVisible ? 0 : 1 }}
-                />
-                {/* Темный оверлей с анимацией - показываем только когда не воспроизводится VK-видео */}
-                {!isDiscovered && (!showVkVideo || !vkIframeVisible) && (
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
-                    style={{
-                      opacity: isAnimating ? 0 : 1,
-                      transition: "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-                      backdropFilter: "blur(2px)",
-                    }}
-                  >
+            <div
+              className="w-full h-full overflow-hidden relative bg-black"
+              style={{
+                transform: `scale(${mediaSize})`,
+                transformOrigin: "center",
+                transition: "transform 0.3s ease-in-out",
+              }}
+            >
+              {videoError ? (
+                <div className="absolute inset-0 flex items-center justify-center text-white">
+                  <p>Video not available</p>
+                </div>
+              ) : (
+                <>
+                  {showVkVideo && vkVideoSrc && vkIframeVisible ? (
                     <div 
-                      className="text-white font-light text-2xl tracking-wider relative overflow-hidden"
+                      className="absolute inset-0 z-20"
+                      style={{ opacity: vkIframeVisible ? 1 : 0, pointerEvents: vkIframeVisible ? 'auto' : 'none', transition: 'opacity 0.3s ease-in-out' }}
+                    >
+                      <iframe
+                        src={vkVideoSrc}
+                        width="100%"
+                        height="100%"
+                        className="w-full h-full"
+                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
+                        frameBorder="0"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : null}
+                  <video
+                    className="w-full h-full object-cover"
+                    src={video}
+                    loop
+                    muted
+                    playsInline
+                    ref={videoRef}
+                    onError={() => setVideoError(true)}
+                    style={{ opacity: showVkVideo && vkIframeVisible ? 0 : 1 }}
+                  />
+                  {/* Темный оверлей с анимацией - показываем только когда не воспроизводится VK-видео */}
+                  {!isDiscovered && (!showVkVideo || !vkIframeVisible) && (
+                    <div 
+                      className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
                       style={{
                         opacity: isAnimating ? 0 : 1,
-                        transform: `scale(${isAnimating ? 1.5 : 1})`,
-                        transition: "opacity 0.5s ease, transform 0.5s ease",
-                        fontFamily: "monospace",
-                        textShadow: "0 0 10px rgba(255,255,255,0.5)"
+                        transition: "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                        backdropFilter: "blur(2px)",
                       }}
                     >
-                      <span className="relative inline-block">
-                        {title ? title : `Frame ${frameId}`}
-                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white" 
-                          style={{
-                            transform: isAnimating ? "translateX(100%)" : "translateX(0)",
-                            transition: "transform 0.5s ease-in-out"
-                          }}
-                        />
-                      </span>
+                      <div 
+                        className="text-white font-light text-2xl tracking-wider relative overflow-hidden"
+                        style={{
+                          opacity: isAnimating ? 0 : 1,
+                          transform: `scale(${isAnimating ? 1.5 : 1})`,
+                          transition: "opacity 0.5s ease, transform 0.5s ease",
+                          fontFamily: "monospace",
+                          textShadow: "0 0 10px rgba(255,255,255,0.5)"
+                        }}
+                      >
+                        <span className="relative inline-block">
+                          {title ? title : `Frame ${frameId}`}
+                          <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white" 
+                            style={{
+                              transform: isAnimating ? "translateX(100%)" : "translateX(0)",
+                              transition: "transform 0.5s ease-in-out"
+                            }}
+                          />
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </div>
           </div>
+
+          {showFrame && (
+            <div className="absolute inset-0" style={{ zIndex: 2 }}>
+              <div
+                className="absolute top-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
+                style={{ backgroundImage: `url(${corner})` }}
+              />
+              <div
+                className="absolute top-0 right-0 w-16 h-16 bg-contain bg-no-repeat"
+                style={{ backgroundImage: `url(${corner})`, transform: "scaleX(-1)" }}
+              />
+              <div
+                className="absolute bottom-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
+                style={{ backgroundImage: `url(${corner})`, transform: "scaleY(-1)" }}
+              />
+              <div
+                className="absolute bottom-0 right-0 w-16 h-16 bg-contain bg-no-repeat"
+                style={{ backgroundImage: `url(${corner})`, transform: "scale(-1, -1)" }}
+              />
+
+              <div
+                className="absolute top-0 left-16 right-16 h-16"
+                style={{
+                  backgroundImage: `url(${edgeHorizontal})`,
+                  backgroundSize: "auto 64px",
+                  backgroundRepeat: "repeat-x",
+                }}
+              />
+              <div
+                className="absolute bottom-0 left-16 right-16 h-16"
+                style={{
+                  backgroundImage: `url(${edgeHorizontal})`,
+                  backgroundSize: "auto 64px",
+                  backgroundRepeat: "repeat-x",
+                  transform: "rotate(180deg)",
+                }}
+              />
+              <div
+                className="absolute left-0 top-16 bottom-16 w-16"
+                style={{
+                  backgroundImage: `url(${edgeVertical})`,
+                  backgroundSize: "64px auto",
+                  backgroundRepeat: "repeat-y",
+                }}
+              />
+              <div
+                className="absolute right-0 top-16 bottom-16 w-16"
+                style={{
+                  backgroundImage: `url(${edgeVertical})`,
+                  backgroundSize: "64px auto",
+                  backgroundRepeat: "repeat-y",
+                  transform: "scaleX(-1)",
+                }}
+              />
+            </div>
+          )}
         </div>
-
-        {showFrame && (
-          <div className="absolute inset-0" style={{ zIndex: 2 }}>
-            <div
-              className="absolute top-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
-              style={{ backgroundImage: `url(${corner})` }}
-            />
-            <div
-              className="absolute top-0 right-0 w-16 h-16 bg-contain bg-no-repeat"
-              style={{ backgroundImage: `url(${corner})`, transform: "scaleX(-1)" }}
-            />
-            <div
-              className="absolute bottom-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
-              style={{ backgroundImage: `url(${corner})`, transform: "scaleY(-1)" }}
-            />
-            <div
-              className="absolute bottom-0 right-0 w-16 h-16 bg-contain bg-no-repeat"
-              style={{ backgroundImage: `url(${corner})`, transform: "scale(-1, -1)" }}
-            />
-
-            <div
-              className="absolute top-0 left-16 right-16 h-16"
-              style={{
-                backgroundImage: `url(${edgeHorizontal})`,
-                backgroundSize: "auto 64px",
-                backgroundRepeat: "repeat-x",
-              }}
-            />
-            <div
-              className="absolute bottom-0 left-16 right-16 h-16"
-              style={{
-                backgroundImage: `url(${edgeHorizontal})`,
-                backgroundSize: "auto 64px",
-                backgroundRepeat: "repeat-x",
-                transform: "rotate(180deg)",
-              }}
-            />
-            <div
-              className="absolute left-0 top-16 bottom-16 w-16"
-              style={{
-                backgroundImage: `url(${edgeVertical})`,
-                backgroundSize: "64px auto",
-                backgroundRepeat: "repeat-y",
-              }}
-            />
-            <div
-              className="absolute right-0 top-16 bottom-16 w-16"
-              style={{
-                backgroundImage: `url(${edgeVertical})`,
-                backgroundSize: "64px auto",
-                backgroundRepeat: "repeat-y",
-                transform: "scaleX(-1)",
-              }}
-            />
-          </div>
-        )}
       </div>
-    </div>
+      
+      {/* Модальное окно для VK видео */}
+      {vkVideoSrc && (
+        <VideoModal 
+          isOpen={isModalOpen} 
+          onClose={handleCloseModal} 
+          videoSrc={vkVideoSrc} 
+        />
+      )}
+    </>
   )
 }
 
