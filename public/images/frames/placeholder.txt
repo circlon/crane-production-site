@@ -1,0 +1,6 @@
+We need to create the following frame border images:
+1. corner.png - corner piece for the frame
+2. edge-h.png - horizontal edge for the frame
+3. edge-v.png - vertical edge for the frame
+
+These should be image files with transparent backgrounds. 
