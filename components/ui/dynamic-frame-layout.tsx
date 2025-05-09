@@ -64,8 +64,6 @@ function FrameComponent({
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoError, setVideoError] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [showVkVideo, setShowVkVideo] = useState(false)
-  const [vkIframeVisible, setVkIframeVisible] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
   // Устанавливаем начальный кадр при загрузке видео
@@ -79,43 +77,20 @@ function FrameComponent({
   useEffect(() => {
     if (isHovered) {
       setIsAnimating(true);
-      if (!showVkVideo) {
-        videoRef.current?.play().catch(() => {
-          setVideoError(true)
-        })
-      }
-      // Если есть VK видео и оно уже было запущено, показываем его
-      if (vkVideoSrc && showVkVideo && !isModalOpen) {
-        setVkIframeVisible(true);
-      }
+      // Воспроизводим только локальные видео (не VK)
+      videoRef.current?.play().catch(() => {
+        setVideoError(true)
+      })
     } else {
       setIsAnimating(false);
       videoRef.current?.pause();
-      
-      // Скрываем iframe VK видео, но не сбрасываем состояние showVkVideo
-      // Это позволит сохранить позицию воспроизведения
-      if (vkVideoSrc && showVkVideo && !isModalOpen) {
-        setVkIframeVisible(false);
-      }
     }
-  }, [isHovered, showVkVideo, vkVideoSrc, isModalOpen]);
+  }, [isHovered]);
 
   const handleFrameClick = () => {
     if (vkVideoSrc) {
-      // Открываем модальное окно вместо воспроизведения в текущем месте
+      // Открываем модальное окно для VK видео
       setIsModalOpen(true);
-      setShowVkVideo(true);
-      // Когда модальное окно открыто, мы скрываем встроенный iframe
-      setVkIframeVisible(false);
-    }
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    // После закрытия модального окна нам нужно обновить состояние
-    // встроенного iframe на основе состояния isHovered
-    if (isHovered && vkVideoSrc && showVkVideo) {
-      setVkIframeVisible(true);
     }
   }
 
@@ -159,22 +134,6 @@ function FrameComponent({
                 </div>
               ) : (
                 <>
-                  {showVkVideo && vkVideoSrc && vkIframeVisible ? (
-                    <div 
-                      className="absolute inset-0 z-20"
-                      style={{ opacity: vkIframeVisible ? 1 : 0, pointerEvents: vkIframeVisible ? 'auto' : 'none', transition: 'opacity 0.3s ease-in-out' }}
-                    >
-                      <iframe
-                        src={vkVideoSrc}
-                        width="100%"
-                        height="100%"
-                        className="w-full h-full"
-                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
-                        frameBorder="0"
-                        allowFullScreen
-                      />
-                    </div>
-                  ) : null}
                   <video
                     className="w-full h-full object-cover"
                     src={video}
@@ -183,10 +142,17 @@ function FrameComponent({
                     playsInline
                     ref={videoRef}
                     onError={() => setVideoError(true)}
-                    style={{ opacity: showVkVideo && vkIframeVisible ? 0 : 1 }}
                   />
-                  {/* Темный оверлей с анимацией - показываем только когда не воспроизводится VK-видео */}
-                  {!isDiscovered && (!showVkVideo || !vkIframeVisible) && (
+                  
+                  {/* Накладываем плашку-индикатор для VK видео */}
+                  {vkVideoSrc && (
+                    <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 text-xs rounded-md opacity-80 pointer-events-none">
+                      VK Video
+                    </div>
+                  )}
+                  
+                  {/* Темный оверлей с анимацией */}
+                  {!isDiscovered && (
                     <div 
                       className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
                       style={{
@@ -284,7 +250,7 @@ function FrameComponent({
       {vkVideoSrc && (
         <VideoModal 
           isOpen={isModalOpen} 
-          onClose={handleCloseModal} 
+          onClose={() => setIsModalOpen(false)} 
           videoSrc={vkVideoSrc} 
         />
       )}
