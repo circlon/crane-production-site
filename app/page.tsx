@@ -157,7 +157,7 @@ export default function Home() {
           
           {/* Индикатор скролла */}
           <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
-            <ScrollIndicator color="white" size={48} />
+            <ScrollIndicator color="white" size={48} targetSection="scroll-expand-section" />
           </div>
         </div>
       </section>
@@ -169,6 +169,7 @@ export default function Home() {
         bgImageSrc=""
         title="Fitness Cinematic Experience"
         textBlend={true}
+        id="scroll-expand-section"
       >
         <div className="text-white max-w-2xl mx-auto">
           <h3 className="text-2xl font-semibold mb-4">The Vision Behind Fitness Cinematic</h3>

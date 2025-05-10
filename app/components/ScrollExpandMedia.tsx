@@ -14,6 +14,7 @@ interface ScrollExpandMediaProps {
   scrollToExpand?: string;
   textBlend?: boolean;
   children?: ReactNode;
+  id?: string;
 }
 
 const ScrollExpandMedia = ({
@@ -25,6 +26,7 @@ const ScrollExpandMedia = ({
   date,
   textBlend,
   children,
+  id,
 }: ScrollExpandMediaProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
@@ -175,6 +177,7 @@ const ScrollExpandMedia = ({
     <div 
       ref={sectionRef}
       className="relative min-h-[100vh] overflow-hidden"
+      id={id}
     >
       <div className="relative w-full min-h-[100vh] flex flex-col items-center">
         {/* Фоновое изображение (при наличии) */}
