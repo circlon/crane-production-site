@@ -132,7 +132,7 @@ const frameData = [
 
 export default function Home() {
   return (
-    <main className="relative bg-black">
+    <main className="relative bg-black overflow-x-hidden">
       {/* Hero section с волнами */}
       <section id="hero-section" className="relative h-screen overflow-hidden">
         <Waves lineColor="rgba(255, 255, 255, 0.5)" />

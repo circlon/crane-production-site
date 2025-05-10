@@ -140,7 +140,7 @@ const ScrollExpandMedia = ({
   // Рассчитываем размеры и трансформации на основе прогресса
   const mediaWidth = 300 + progress * (isMobile ? 650 : 1250);
   const mediaHeight = 400 + progress * (isMobile ? 200 : 400);
-  const textTranslateX = progress * (isMobile ? 180 : 150);
+  const textTranslateX = progress * (isMobile ? 60 : 50);
   const contentOpacity = Math.max(0, (progress - 0.75) * 4); // Показываем контент после 75% прогресса
   
   // Разделяем заголовок для анимации
@@ -150,7 +150,7 @@ const ScrollExpandMedia = ({
   return (
     <div 
       ref={sectionRef}
-      className="relative min-h-[100vh]"
+      className="relative min-h-[100vh] overflow-hidden"
     >
       <div className="relative w-full min-h-[100vh] flex flex-col items-center">
         {/* Фоновое изображение (при наличии) */}
@@ -283,14 +283,14 @@ const ScrollExpandMedia = ({
 
             {/* Заголовок */}
             <div
-              className={`flex items-center justify-center text-center gap-4 w-full relative z-10 flex-col ${
+              className={`flex items-center justify-center text-center gap-4 w-full relative z-10 flex-col overflow-hidden max-w-screen-lg mx-auto ${
                 textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
               }`}
             >
               <motion.h2
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-200"
                 style={{ 
-                  transform: `translateX(-${textTranslateX}vw)`,
+                  transform: `translateX(-${Math.min(textTranslateX, 100)}vw)`,
                   transition: 'transform 0.05s ease-out'
                 }}
               >
@@ -299,7 +299,7 @@ const ScrollExpandMedia = ({
               <motion.h2
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-blue-200"
                 style={{ 
-                  transform: `translateX(${textTranslateX}vw)`,
+                  transform: `translateX(${Math.min(textTranslateX, 100)}vw)`,
                   transition: 'transform 0.05s ease-out'
                 }}
               >
