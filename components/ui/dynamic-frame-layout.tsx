@@ -1,8 +1,10 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { motion } from "framer-motion"
 import { VideoModal } from "./video-modal"
+import { CyberText } from "./cyber-text"
+import { ANIMATION_TIMINGS } from "@/lib/constants/animation-timings"
 
 interface Frame {
   id: number
@@ -65,6 +67,19 @@ function FrameComponent({
   const [videoError, setVideoError] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isClicked, setIsClicked] = useState(false)
+  
+  // Ref для хранения таймера сброса клика
+  const clickResetTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Очистка таймера при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (clickResetTimerRef.current) {
+        clearTimeout(clickResetTimerRef.current)
+      }
+    }
+  }, [])
   
   // Устанавливаем начальный кадр при загрузке видео
   useEffect(() => {
@@ -87,12 +102,27 @@ function FrameComponent({
     }
   }, [isHovered]);
 
-  const handleFrameClick = () => {
+  // Обработчик клика на фрейм
+  const handleFrameClick = useCallback(() => {
+    // Очищаем предыдущий таймер сброса, если он существует
+    if (clickResetTimerRef.current) {
+      clearTimeout(clickResetTimerRef.current)
+    }
+    
+    setIsClicked(true); // Запускаем анимацию закрытия
+    
     if (vkVideoSrc) {
       // Открываем модальное окно для VK видео
       setIsModalOpen(true);
     }
-  }
+    
+    // Сбрасываем клик, чтобы при следующем наведении можно было снова запустить анимацию
+    // Используем константу HIDE_DURATION для синхронизации с анимацией скрытия
+    clickResetTimerRef.current = setTimeout(() => {
+      setIsClicked(false);
+      clickResetTimerRef.current = null;
+    }, ANIMATION_TIMINGS.HIDE_DURATION + 50); // Добавляем небольшой запас времени
+  }, [vkVideoSrc]);
 
   return (
     <>
@@ -144,38 +174,28 @@ function FrameComponent({
                     onError={() => setVideoError(true)}
                   />
                   
-                  {/* Темный оверлей с анимацией */}
-                  {!isDiscovered && (
-                    <div 
-                      className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
-                      style={{
-                        opacity: isAnimating ? 0 : 1,
-                        transition: "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-                        backdropFilter: "blur(2px)",
-                      }}
+                  {/* Темный оверлей с киберпанк текстом */}
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
+                    style={{
+                      opacity: 0.5,
+                      transition: "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                      backdropFilter: "blur(2px)",
+                    }}
+                  >
+                    <CyberText
+                      isHovered={isHovered}
+                      isClicked={isClicked}
+                      className="text-white font-mono text-2xl tracking-wider"
+                      initialState={isDiscovered ? 'hidden' : 'visible'}
+                      autoRevealDelay={7000}
                     >
-                      <div 
-                        className="text-white font-light text-2xl tracking-wider relative overflow-hidden"
-                        style={{
-                          opacity: isAnimating ? 0 : 1,
-                          transform: `scale(${isAnimating ? 1.5 : 1})`,
-                          transition: "opacity 0.5s ease, transform 0.5s ease",
-                          fontFamily: "monospace",
-                          textShadow: "0 0 10px rgba(255,255,255,0.5)"
-                        }}
-                      >
-                        <span className="relative inline-block">
-                          {title ? title : `Frame ${frameId}`}
-                          <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white" 
-                            style={{
-                              transform: isAnimating ? "translateX(100%)" : "translateX(0)",
-                              transition: "transform 0.5s ease-in-out"
-                            }}
-                          />
-                        </span>
+                      <div className="px-4 py-2 relative text-center">
+                        <span>{title ? title : `Frame ${frameId}`}</span>
+                        <div className="absolute bottom-0 left-0 right-0 h-px bg-white opacity-50" />
                       </div>
-                    </div>
-                  )}
+                    </CyberText>
+                  </div>
                 </>
               )}
             </div>

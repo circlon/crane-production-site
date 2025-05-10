@@ -13,10 +13,24 @@
  * }
  */
 
+/* 
+ * CSS переменные для анимаций
+ * ВАЖНО: Эти значения синхронизированы с lib/constants/animation-timings.ts
+ * При изменении значений здесь, обязательно обновите их там
+ */
 :root {
   --fluid-animation-duration: 0.8s;
   --fluid-animation-ease: cubic-bezier(0.65, 0, 0.35, 1);
   --fluid-scroll-transition-timing: cubic-bezier(0.2, 0.6, 0.3, 1);
+  
+  /* Синхронизированные переменные для киберпанк-анимаций */
+  --cyber-reveal-duration: 1s; /* 1000мс в JS */
+  --cyber-hide-duration: 0.6s; /* 600мс в JS */
+  --cyber-line-color: rgba(255, 255, 255, 0.8);
+  --cyber-glitch-intensity: 5px;
+  --cyber-text-glow: 0 0 8px rgba(255, 255, 255, 0.9);
+  --cyber-text-color: rgba(255, 255, 255, 0.9);
+  --cyber-noise-opacity: 0.05;
 }
 
 /* Глобальные настройки для предотвращения горизонтального скролла */
@@ -130,8 +144,165 @@ html, body {
   z-index: 2;
 }
 
-/* Примечание: классы typography и smooth scrolling перенесены 
-   в глобальные стили или заменены утилитами Tailwind */
+/* УПРОЩЕННЫЕ КИБЕРПАНК-АНИМАЦИИ ДЛЯ ЗАГОЛОВКОВ */
+
+/* Общий класс для всех анимируемых заголовков */
+.animation-target {
+  position: relative;
+  color: var(--cyber-text-color);
+  text-shadow: var(--cyber-text-glow);
+  will-change: clip-path, opacity, transform;
+  opacity: 0.8;
+}
+
+/* Анимации на основе data-атрибутов */
+.animation-target[data-hover-state="not-hovered"] {
+  animation: cyberReveal var(--cyber-reveal-duration) forwards;
+  animation-fill-mode: both;
+  will-change: clip-path, opacity;
+}
+
+.animation-target[data-hover-state="hovered"] {
+  animation: cyberHide var(--cyber-hide-duration) forwards;
+  animation-fill-mode: both;
+  will-change: clip-path, opacity, transform;
+}
+
+/* УПРОЩЕННЫЕ КЛЮЧЕВЫЕ КАДРЫ */
+
+/* Восьмибитная пиксельная анимация появления */
+@keyframes cyberReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+    text-shadow: none;
+    transform: translateX(-5px);
+  }
+  20% {
+    clip-path: inset(0 80% 0 0);
+    opacity: 0.4;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(-3px);
+  }
+  40% {
+    clip-path: inset(0 60% 0 0);
+    opacity: 0.6;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(-1px);
+  }
+  60% {
+    clip-path: inset(0 40% 0 0);
+    opacity: 0.8;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(0);
+  }
+  80% {
+    clip-path: inset(0 20% 0 0);
+    opacity: 0.9;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(0);
+  }
+}
+
+/* Восьмибитная пиксельная анимация исчезновения */
+@keyframes cyberHide {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(0);
+  }
+  20% {
+    clip-path: inset(0 0 0 20%);
+    opacity: 0.9;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(0);
+  }
+  40% {
+    clip-path: inset(0 0 0 40%);
+    opacity: 0.8;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(1px);
+  }
+  60% {
+    clip-path: inset(0 0 0 60%);
+    opacity: 0.6;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(2px);
+  }
+  80% {
+    clip-path: inset(0 0 0 80%);
+    opacity: 0.4;
+    text-shadow: 1px 0 0 var(--cyber-line-color);
+    transform: translateX(3px);
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0;
+    text-shadow: none;
+    transform: translateX(5px);
+  }
+}
+
+/* Сканирующая линия */
+.cyber-scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--cyber-line-color);
+  box-shadow: 0 0 3px var(--cyber-line-color);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Добавляем пиксельный эффект к CyberText */
+[data-cyber-state="revealing"], 
+[data-cyber-state="visible"] {
+  image-rendering: pixelated;
+  font-family: monospace;
+  letter-spacing: 1px;
+  animation-timing-function: steps(10, end) !important; /* Делаем анимацию ступенчатой */
+}
+
+/* Упрощенные анимации для сканирующей линии */
+@keyframes scanLineReveal {
+  0% { left: 0; opacity: 0; }
+  10% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+  90% { opacity: 0.2; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@keyframes scanLineHide {
+  0% { left: 100%; opacity: 0; }
+  10% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+  90% { opacity: 0.2; }
+  100% { left: 0; opacity: 0; }
+}
+
+/* Эффект шума для заголовков через маску */
+.animation-target::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: var(--cyber-noise-opacity);
+  z-index: -1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
 
 /* Переход между секциями */
 #hero-section {
@@ -140,4 +311,213 @@ html, body {
               opacity 0.4s var(--fluid-scroll-transition-timing);
   will-change: transform, filter, opacity;
   transform-origin: center bottom;
+}
+
+/* Основные стили для контейнера фрейма */
+.frame-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Киберпанк-анимации для компонента CyberText */
+.cyber-text-reveal {
+  animation: cyberReveal var(--cyber-reveal-duration) forwards;
+  animation-fill-mode: both;
+  will-change: clip-path, opacity, transform;
+}
+
+.cyber-text-hide {
+  animation: cyberHide var(--cyber-hide-duration) forwards;
+  animation-fill-mode: both;
+  will-change: clip-path, opacity, transform;
+}
+
+/* Анимация для сканирующей линии */
+.cyber-text-reveal .cyber-scan-line {
+  animation: scanLineReveal var(--cyber-reveal-duration) forwards;
+  animation-fill-mode: both;
+  will-change: left, opacity;
+}
+
+.cyber-text-hide .cyber-scan-line {
+  animation: scanLineHide var(--cyber-hide-duration) forwards;
+  animation-fill-mode: both;
+  will-change: left, opacity;
+}
+
+/* Класс для пиксельного эффекта */
+.cyber-text-pixelated {
+  image-rendering: pixelated;
+  font-family: monospace !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation-timing-function: steps(10, end) !important; /* Делаем анимацию ступенчатой */
+}
+
+.cyber-text-pixelated .cyber-scan-line {
+  height: 4px !important;
+  background: repeating-linear-gradient(
+    to right,
+    var(--cyber-line-color),
+    var(--cyber-line-color) 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+  box-shadow: 0 0 5px 1px var(--cyber-line-color) !important;
+}
+
+/* Эффект шума для заголовков через маску */
+.animation-target::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: var(--cyber-noise-opacity);
+  z-index: -1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Анимации рассыпания на пиксельные кубики */
+@keyframes pixelExplode {
+  0% {
+    transform: translateX(0) translateY(0) translateZ(0) rotate(0deg) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+    box-shadow: 0 0 2px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  20% {
+    transform: translateX(calc(var(--pixel-move-x, 10px) * 0.2)) 
+               translateY(calc(var(--pixel-move-y, 20px) * 0.2))
+               translateZ(calc(var(--pixel-move-z, 0px) * 0.2))
+               rotate(calc(var(--pixel-rotate, 0deg) * 0.2))
+               scale(var(--pixel-scale, 0.95));
+    opacity: 0.9;
+    filter: blur(1px);
+    box-shadow: 0 0 5px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  60% {
+    transform: translateX(calc(var(--pixel-move-x, 10px) * 0.6)) 
+               translateY(calc(var(--pixel-move-y, 20px) * 0.6))
+               translateZ(calc(var(--pixel-move-z, 0px) * 0.6))
+               rotate(calc(var(--pixel-rotate, 0deg) * 0.6))
+               scale(calc(var(--pixel-scale, 0.6) * 0.8));
+    opacity: 0.6;
+    filter: blur(2px);
+    box-shadow: 0 0 10px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  100% {
+    transform: translateX(var(--pixel-move-x, 10px)) 
+               translateY(var(--pixel-move-y, 20px))
+               translateZ(var(--pixel-move-z, 0px))
+               rotate(var(--pixel-rotate, 0deg))
+               scale(0);
+    opacity: 0;
+    filter: blur(4px);
+    box-shadow: 0 0 0 var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+}
+
+@keyframes pixelCollect {
+  0% {
+    transform: translateX(var(--pixel-move-x, 10px)) 
+               translateY(var(--pixel-move-y, 20px))
+               translateZ(var(--pixel-move-z, 0px))
+               rotate(var(--pixel-rotate, 0deg))
+               scale(0);
+    opacity: 0;
+    filter: blur(4px);
+    box-shadow: 0 0 0 var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  40% {
+    transform: translateX(calc(var(--pixel-move-x, 10px) * 0.6)) 
+               translateY(calc(var(--pixel-move-y, 20px) * 0.6))
+               translateZ(calc(var(--pixel-move-z, 0px) * 0.6))
+               rotate(calc(var(--pixel-rotate, 0deg) * 0.6))
+               scale(calc(var(--pixel-scale, 0.6) * 0.5));
+    opacity: 0.4;
+    filter: blur(3px);
+    box-shadow: 0 0 8px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  70% {
+    transform: translateX(calc(var(--pixel-move-x, 10px) * 0.3)) 
+               translateY(calc(var(--pixel-move-y, 20px) * 0.3))
+               translateZ(calc(var(--pixel-move-z, 0px) * 0.3))
+               rotate(calc(var(--pixel-rotate, 0deg) * 0.3))
+               scale(calc(var(--pixel-scale, 0.8) * 0.7));
+    opacity: 0.7;
+    filter: blur(1.5px);
+    box-shadow: 0 0 6px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  90% {
+    transform: translateX(calc(var(--pixel-move-x, 10px) * 0.1)) 
+               translateY(calc(var(--pixel-move-y, 20px) * 0.1))
+               translateZ(calc(var(--pixel-move-z, 0px) * 0.1))
+               rotate(calc(var(--pixel-rotate, 0deg) * 0.1))
+               scale(0.95);
+    opacity: 0.9;
+    filter: blur(0.5px);
+    box-shadow: 0 0 4px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+  100% {
+    transform: translateX(0) translateY(0) translateZ(0) rotate(0deg) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+    box-shadow: 0 0 2px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+  }
+}
+
+/* Расширенный класс для пиксельного эффекта разбивания на кубики */
+.cyber-text-pixelated-fragments .pixel-fragment {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  background-color: var(--cyber-text-color, rgba(255, 255, 255, 0.9));
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+  border-radius: 2px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 10;
+  backface-visibility: visible;
+  perspective: 800px;
+}
+
+.cyber-text-reveal .pixel-fragment {
+  animation: pixelCollect var(--cyber-reveal-duration) forwards;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+}
+
+.cyber-text-hide .pixel-fragment {
+  animation: pixelExplode var(--cyber-hide-duration) forwards;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.550, 0.085, 0.680, 0.530);
+}
+
+/* Класс-контейнер для пиксельного текста с фрагментацией */
+.cyber-text-pixelated-fragments {
+  position: relative;
+  display: inline-block;
+  min-width: 150px;
+  min-height: 40px;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Добавляем эффект для состояния, когда фрагменты активны */
+.cyber-text-pixelated-fragments.active-fragments .pixel-fragment {
+  box-shadow: 0 0 8px var(--pixel-glow-color, rgba(0, 255, 240, 0.8));
+}
+
+/* Класс для "призрачных" фрагментов */
+.cyber-text-pixelated-fragments .pixel-fragment.ghost {
+  background-color: rgba(255, 255, 255, 0.3);
+  mix-blend-mode: screen;
 } 
