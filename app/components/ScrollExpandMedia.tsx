@@ -62,7 +62,7 @@ const ScrollExpandMedia = ({
       const rawProgress = 1 - Math.max(0, Math.min(1, (current - end) / total));
       
       // Добавляем плавность к изменению прогресса (интерполяция)
-      const smoothFactor = 0.15; // Коэффициент сглаживания (меньше = плавнее)
+      const smoothFactor = 0.08; // Коэффициент сглаживания (меньше = плавнее)
       const newProgress = prevProgressRef.current + (rawProgress - prevProgressRef.current) * smoothFactor;
       prevProgressRef.current = newProgress; // Сохраняем для следующего кадра
       
@@ -145,9 +145,27 @@ const ScrollExpandMedia = ({
 
   // Рассчитываем размеры и трансформации на основе прогресса
   const mediaWidth = 300 + progress * (isMobile ? 650 : 1250);
-  const mediaHeight = 400 + progress * (isMobile ? 200 : 400);
-  const textTranslateX = progress * (isMobile ? 30 : 25);
+  const mediaHeight = 300 + progress * (isMobile ? 300 : 500);
+  
+  // Новый расчет смещения текста с использованием нелинейной функции
+  // Текст начинает разъезжаться только после 50% прогресса и ускоряется к концу
+  const easeInOutCubic = (x: number) => {
+    // Ступенчатая функция: держим текст на месте до 50%, затем начинаем движение
+    // с кубическим ускорением к концу (кривая Безье с ускорением)
+    if (x < 0.5) return 0;
+    const adjusted = (x - 0.5) / 0.5; // нормализуем оставшийся диапазон от 0 до 1
+    
+    // Эффект очень медленного начала и резкого ускорения к концу
+    return adjusted * adjusted * adjusted;
+  };
+  
+  const textTranslateX = easeInOutCubic(progress) * (isMobile ? 120 : 100);
+  
   const contentOpacity = Math.max(0, (progress - 0.75) * 4); // Показываем контент после 75% прогресса
+  
+  // Расчет прозрачности заголовка - исчезает к концу прокрутки
+  // Начинаем уменьшать прозрачность с 80% прогресса, полное исчезновение к 100%
+  const titleOpacity = progress > 0.8 ? Math.max(0, 1 - (progress - 0.8) * 5) : 1;
   
   // Разделяем заголовок для анимации
   const firstWord = title ? title.split(' ')[0] : '';
@@ -278,7 +296,8 @@ const ScrollExpandMedia = ({
                     className="text-2xl text-blue-200"
                     style={{ 
                       transform: `translateX(-${textTranslateX}vw)`,
-                      transition: 'transform 0.05s ease-out' 
+                      transition: 'transform 0.2s cubic-bezier(0.33, 1, 0.68, 1)',
+                      opacity: titleOpacity
                     }}
                   >
                     {date}
@@ -289,24 +308,26 @@ const ScrollExpandMedia = ({
 
             {/* Заголовок */}
             <div
-              className={`flex items-center justify-center text-center gap-4 w-full relative z-10 flex-col overflow-hidden max-w-screen-lg mx-auto ${
+              className={`flex items-center justify-center text-center gap-2 w-full relative z-10 flex-col overflow-hidden max-w-screen-lg mx-auto ${
                 textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
               }`}
             >
               <motion.h2
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-200"
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-blue-200"
                 style={{ 
                   transform: `translateX(-${Math.min(textTranslateX, 100)}vw)`,
-                  transition: 'transform 0.2s cubic-bezier(0.33, 1, 0.68, 1)'
+                  transition: 'transform 0.3s cubic-bezier(0.33, 1, 0.68, 1)',
+                  opacity: titleOpacity
                 }}
               >
                 {firstWord}
               </motion.h2>
               <motion.h2
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-blue-200"
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-center text-blue-200"
                 style={{ 
                   transform: `translateX(${Math.min(textTranslateX, 100)}vw)`,
-                  transition: 'transform 0.2s cubic-bezier(0.33, 1, 0.68, 1)'
+                  transition: 'transform 0.3s cubic-bezier(0.33, 1, 0.68, 1)',
+                  opacity: titleOpacity
                 }}
               >
                 {restOfTitle}

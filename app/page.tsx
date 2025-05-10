@@ -162,7 +162,6 @@ export default function Home() {
         mediaSrc="/videos/Raf New 1.mp4"
         bgImageSrc=""
         title="Fitness Cinematic Experience"
-        date="2024"
         textBlend={true}
       >
         <div className="text-white max-w-2xl mx-auto">
