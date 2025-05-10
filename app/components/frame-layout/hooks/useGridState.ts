@@ -15,6 +15,7 @@ interface GridTemplateProps {
 }
 
 export function useGridState(frames: Frame[], hoverSize = 6) {
+  // Нейтральная инициализация - начинаем без наведенных элементов
   const [hovered, setHovered] = useState<HoverState | null>(null);
   
   // Рассчитывает размеры сетки на основе состояния наведения

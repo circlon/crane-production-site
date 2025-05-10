@@ -15,6 +15,7 @@ export interface FrameProps {
   showFrame: boolean;
   borderThickness: number;
   borderSize: number;
+  title?: string;
 }
 
 export interface FrameItemProps {
@@ -31,6 +32,7 @@ export interface Frame {
   borderThickness: number;
   borderSize: number;
   position: { row: number; col: number };
+  title?: string;
 }
 
 export interface MediaProviderProps {

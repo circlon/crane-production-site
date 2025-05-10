@@ -6,6 +6,7 @@ import { DynamicFrameLayout } from '../components/ui/dynamic-frame-layout';
 import ScrollExpandMedia from './components/ScrollExpandMedia';
 import FluidTitle from './components/FluidTitle';
 import ScrollIndicator from './components/ScrollIndicator';
+import { NoiseEffect } from './components/Noise';
 import './styles/fluid-animations.css';
 
 const frameData = [
@@ -133,6 +134,11 @@ const frameData = [
 export default function Home() {
   return (
     <main className="relative bg-black overflow-x-hidden">
+      {/* Global noise effect for all sections */}
+      <div className="fixed inset-0 z-10 pointer-events-none">
+        <NoiseEffect patternAlpha={10} patternRefreshInterval={4} />
+      </div>
+      
       {/* Hero section с волнами */}
       <section id="hero-section" className="relative h-screen overflow-hidden">
         <Waves lineColor="rgba(255, 255, 255, 0.5)" />

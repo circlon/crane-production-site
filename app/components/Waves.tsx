@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useScroll, motion, useTransform } from "framer-motion"
+import { NoiseEffect } from './Noise';
 
 interface WavesProps {
   /**
@@ -383,6 +384,13 @@ export function Waves({
         className,
       )}
     >
+      <NoiseEffect 
+        patternAlpha={5} 
+        patternRefreshInterval={8} 
+        patternScaleX={1.2} 
+        patternScaleY={1.2} 
+      />
+      
       <div
         className={cn(
           "absolute top-0 left-0 rounded-full",
