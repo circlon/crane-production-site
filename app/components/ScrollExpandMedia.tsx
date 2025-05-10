@@ -125,11 +125,23 @@ const ScrollExpandMedia = ({
       }
     };
     
+    // Обязательно указываем passive: true для лучшей производительности на мобильных устройствах
     window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Добавляем обработчик касаний для iOS
+    const handleTouchStart = () => {
+      // Просто обновляем состояние при касании
+      if (!frameId) {
+        updateHeroSection(progress);
+      }
+    };
+    
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     
     return () => {
       if (frameId) cancelAnimationFrame(frameId);
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchstart', handleTouchStart);
       
       // Сбрасываем эффекты при размонтировании компонента
       const heroSection = document.querySelector('#hero-section');
