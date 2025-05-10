@@ -29,6 +29,7 @@ const ScrollExpandMedia = ({
   const sectionRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const prevProgressRef = useRef(0); // Для отслеживания предыдущего значения прогресса
 
   // Адаптация к мобильным устройствам
   useEffect(() => {
@@ -58,9 +59,14 @@ const ScrollExpandMedia = ({
       
       // Вычисляем прогресс от 0 до 1
       const current = rect.top;
-      const newProgress = 1 - Math.max(0, Math.min(1, (current - end) / total));
+      const rawProgress = 1 - Math.max(0, Math.min(1, (current - end) / total));
       
-      if (newProgress !== progress) {
+      // Добавляем плавность к изменению прогресса (интерполяция)
+      const smoothFactor = 0.15; // Коэффициент сглаживания (меньше = плавнее)
+      const newProgress = prevProgressRef.current + (rawProgress - prevProgressRef.current) * smoothFactor;
+      prevProgressRef.current = newProgress; // Сохраняем для следующего кадра
+      
+      if (Math.abs(newProgress - progress) > 0.001) {
         setProgress(newProgress);
         
         // Затемняем первую секцию при скролле вниз
@@ -140,7 +146,7 @@ const ScrollExpandMedia = ({
   // Рассчитываем размеры и трансформации на основе прогресса
   const mediaWidth = 300 + progress * (isMobile ? 650 : 1250);
   const mediaHeight = 400 + progress * (isMobile ? 200 : 400);
-  const textTranslateX = progress * (isMobile ? 60 : 50);
+  const textTranslateX = progress * (isMobile ? 30 : 25);
   const contentOpacity = Math.max(0, (progress - 0.75) * 4); // Показываем контент после 75% прогресса
   
   // Разделяем заголовок для анимации
@@ -291,7 +297,7 @@ const ScrollExpandMedia = ({
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-200"
                 style={{ 
                   transform: `translateX(-${Math.min(textTranslateX, 100)}vw)`,
-                  transition: 'transform 0.05s ease-out'
+                  transition: 'transform 0.2s cubic-bezier(0.33, 1, 0.68, 1)'
                 }}
               >
                 {firstWord}
@@ -300,7 +306,7 @@ const ScrollExpandMedia = ({
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-blue-200"
                 style={{ 
                   transform: `translateX(${Math.min(textTranslateX, 100)}vw)`,
-                  transition: 'transform 0.05s ease-out'
+                  transition: 'transform 0.2s cubic-bezier(0.33, 1, 0.68, 1)'
                 }}
               >
                 {restOfTitle}
