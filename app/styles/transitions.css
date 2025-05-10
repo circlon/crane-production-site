@@ -1,0 +1,146 @@
+/* Fluid transitions and animations */
+:root {
+  --transition-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --wave-height: 150px;
+  --wave-color: black;
+  --wave-speed: 1.5s;
+}
+
+/* Smooth page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms var(--transition-ease), transform 400ms var(--transition-ease);
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 400ms var(--transition-ease), transform 400ms var(--transition-ease);
+}
+
+/* Section transitions */
+.section-transition {
+  position: relative;
+  overflow: hidden;
+}
+
+.section-transition::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: var(--wave-color);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s var(--transition-ease);
+  z-index: 10;
+}
+
+.section-transition.enter::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.section-transition.exit::before {
+  transform: scaleX(0);
+  transform-origin: right;
+}
+
+/* Wave animation */
+@keyframes wave {
+  0% {
+    d: path('M0,64 C24,56 69.5,32 106.5,32 C156,32 186,64 246,64 C306,64 329.5,40 377,40 C424.5,40 459,64 493,64 C527,64 651,32 700,32 C750,32 798,64 852,64 C906,64 950,32 1000,32 C1050,32 1084,64 1116,64 C1148,64 1171,32 1200,32 C1200,64 1200,64 1200,64 L0,64 Z');
+  }
+  50% {
+    d: path('M0,64 C24,56 69.5,48 106.5,48 C156,48 186,64 246,64 C306,64 329.5,48 377,48 C424.5,48 459,64 493,64 C527,64 651,36 700,36 C750,36 798,64 852,64 C906,64 950,48 1000,48 C1050,48 1084,64 1116,64 C1148,64 1171,36 1200,36 C1200,64 1200,64 1200,64 L0,64 Z');
+  }
+  100% {
+    d: path('M0,64 C24,56 69.5,32 106.5,32 C156,32 186,64 246,64 C306,64 329.5,40 377,40 C424.5,40 459,64 493,64 C527,64 651,32 700,32 C750,32 798,64 852,64 C906,64 950,32 1000,32 C1050,32 1084,64 1116,64 C1148,64 1171,32 1200,32 C1200,64 1200,64 1200,64 L0,64 Z');
+  }
+}
+
+.wave {
+  animation: wave var(--wave-speed) infinite linear;
+}
+
+/* Slide in animations */
+.slide-in-left {
+  transform: translateX(-100%);
+  animation: slideInLeft 0.8s var(--transition-ease) forwards;
+  opacity: 0;
+}
+
+.slide-in-right {
+  transform: translateX(100%);
+  animation: slideInRight 0.8s var(--transition-ease) forwards;
+  opacity: 0;
+}
+
+.slide-in-up {
+  transform: translateY(100%);
+  animation: slideInUp 0.8s var(--transition-ease) forwards;
+  opacity: 0;
+}
+
+.slide-in-down {
+  transform: translateY(-100%);
+  animation: slideInDown 0.8s var(--transition-ease) forwards;
+  opacity: 0;
+}
+
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+} 

@@ -144,13 +144,6 @@ function FrameComponent({
                     onError={() => setVideoError(true)}
                   />
                   
-                  {/* Накладываем плашку-индикатор для VK видео */}
-                  {vkVideoSrc && (
-                    <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 text-xs rounded-md opacity-80 pointer-events-none">
-                      VK Video
-                    </div>
-                  )}
-                  
                   {/* Темный оверлей с анимацией */}
                   {!isDiscovered && (
                     <div 

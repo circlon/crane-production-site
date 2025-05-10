@@ -19,7 +19,7 @@ export function IframeMedia({ src, isHovered }: MediaProps) {
   const isVkVideo = src?.includes('vkvideo.ru') || src?.includes('vk.com');
   
   // Создаем цвет для фона превью
-  const bgColor = isVkVideo ? 'bg-blue-900' : 'bg-purple-900';
+  const bgColor = isVkVideo ? 'bg-black' : 'bg-purple-900';
 
   return (
     <>
@@ -41,14 +41,14 @@ export function IframeMedia({ src, isHovered }: MediaProps) {
           {/* Анимированный фон для превью */}
           <div className="absolute inset-0 z-0 opacity-30">
             {isHovered && (
-              <div className="absolute inset-0 bg-gradient-radial from-white/10 to-transparent animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-radial from-white/20 to-transparent animate-pulse" />
             )}
             <div className="absolute -inset-1 bg-grid-white/10" style={{ backgroundSize: '20px 20px' }} />
-          </div>
-          
-          {/* Индикатор типа контента */}
-          <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-md text-white px-2 py-1 text-xs rounded-md">
-            {isVkVideo ? 'VK' : 'External'}
+            {isVkVideo && isHovered && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
           </div>
         </div>
       </div>

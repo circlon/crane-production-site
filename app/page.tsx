@@ -1,8 +1,12 @@
+"use client";
+
 import React from 'react';
 import { Waves } from './components/Waves';
 import { DynamicFrameLayout } from '../components/ui/dynamic-frame-layout';
 import ScrollExpandMedia from './components/ScrollExpandMedia';
-import { InfiniteTextMarquee } from '@/components/ui/infinite-text-marquee';
+import FluidTitle from './components/FluidTitle';
+import ScrollIndicator from './components/ScrollIndicator';
+import './styles/fluid-animations.css';
 
 const frameData = [
   {
@@ -18,7 +22,7 @@ const frameData = [
     isHovered: false,
     startTime: 0,
     title: 'Fitness Cinematic',
-    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1'
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1'
   },
   {
     id: 2,
@@ -129,28 +133,25 @@ const frameData = [
 export default function Home() {
   return (
     <main className="relative bg-black">
-      {/* Hero section with waves background */}
-      <section className="relative h-screen overflow-hidden">
+      {/* Hero section с волнами */}
+      <section id="hero-section" className="relative h-screen overflow-hidden">
         <Waves lineColor="rgba(255, 255, 255, 0.5)" />
         <div className="h-screen flex flex-col items-center justify-center text-white relative z-10">
           <div className="max-w-6xl mx-auto text-center px-4">
-            <div className="-mt-8">
-              <InfiniteTextMarquee
-                text="CRANE PRODUCTION"
-                link="#"
-                speed={60}
-                showTooltip={false}
-                fontSize="9rem"
-                textColor="white"
-                hoverColor="rgba(255, 255, 255, 0.8)"
-              />
-            </div>
-            <p className="text-xl md:text-2xl mt-12 mb-8">
+            <FluidTitle 
+              text="CRANE PRODUCTION" 
+              color="white"
+              className="mb-6"
+              delay={0.5}
+            />
+            <p className="text-xl md:text-2xl mt-4">
               Capturing moments that matter
             </p>
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-full font-medium text-lg hover:bg-opacity-90 transition-all">
-              Explore Our Work
-            </button>
+          </div>
+          
+          {/* Индикатор скролла */}
+          <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
+            <ScrollIndicator color="white" size={48} />
           </div>
         </div>
       </section>

@@ -47,17 +47,35 @@ export function VideoModal({ isOpen, onClose, videoSrc }: VideoModalProps) {
   
   // Формируем URL для VK видео с параметром HD
   const getVideoUrl = () => {
-    // Проверяем, есть ли уже параметры в URL
-    if (videoSrc.includes('?')) {
-      // Если уже есть параметр hd, обновляем его
-      if (videoSrc.includes('hd=')) {
-        return videoSrc.replace(/hd=\d+/, 'hd=4');
-      }
-      // Иначе добавляем параметр hd=4
-      return `${videoSrc}&hd=4`;
+    // Если это не видео ВК, возвращаем исходный URL
+    if (!videoSrc.includes('vkvideo.ru') && !videoSrc.includes('vk.com')) {
+      return videoSrc;
     }
-    // Если параметров нет, добавляем hd=4
-    return `${videoSrc}?hd=4`;
+    
+    // Базовые параметры для URL видео ВК
+    const requiredParams = new Map([
+      ['hd', '2'], // Принудительно устанавливаем HD 1080p (2 - код для 1080p)
+      ['autoplay', '1'], // Автоматически воспроизводить видео
+      ['preload', '1'], // Предзагрузка видео
+      ['prefer_h265', '1'], // Предпочитать кодек H.265 (если доступен)
+      ['no_buffer_preload', '1'], // Отключаем предзагрузку буфера до воспроизведения
+      ['quality', '1080p'], // Указываем качество 1080p
+      ['force_hd', '1'], // Дополнительный параметр для форсирования HD
+      ['vq', '1080'], // VQ параметр для указания разрешения
+      ['max_res', '1080'] // Максимальное разрешение
+    ]);
+    
+    // Разбираем исходный URL
+    let [baseUrl, queryString] = videoSrc.split('?');
+    const params = new URLSearchParams(queryString || '');
+    
+    // Добавляем или обновляем необходимые параметры
+    requiredParams.forEach((value, key) => {
+      params.set(key, value);
+    });
+    
+    // Формируем окончательный URL
+    return `${baseUrl}?${params.toString()}`;
   };
   
   return (
@@ -91,15 +109,21 @@ export function VideoModal({ isOpen, onClose, videoSrc }: VideoModalProps) {
               <X size={24} />
             </button>
             
+            {/* Индикатор загрузки */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black">
+              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            
             {/* VK Видео плеер */}
             <iframe
               src={getVideoUrl()}
               width="100%"
               height="100%"
-              className="w-full h-full"
+              className="w-full h-full relative z-10"
               allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
               frameBorder="0"
               allowFullScreen
+              loading="eager"
             />
           </motion.div>
         </motion.div>

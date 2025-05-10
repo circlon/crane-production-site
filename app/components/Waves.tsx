@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { useScroll, motion, useTransform } from "framer-motion"
 
 interface WavesProps {
   /**
@@ -22,6 +23,14 @@ interface WavesProps {
   tension?: number
   maxCursorMove?: number
   className?: string
+  /**
+   * Реагировать ли на скролл
+   */
+  reactToScroll?: boolean
+  /**
+   * Множитель эффекта параллакса
+   */
+  parallaxFactor?: number
 }
 
 class Grad {
@@ -142,6 +151,8 @@ export function Waves({
   tension = 0.005,
   maxCursorMove = 100,
   className,
+  reactToScroll = true,
+  parallaxFactor = 0.1
 }: WavesProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -161,6 +172,13 @@ export function Waves({
     a: 0,
     set: false,
   })
+  
+  const { scrollYProgress } = useScroll()
+  const scrollParallax = useTransform(
+    scrollYProgress, 
+    [0, 1], 
+    [0, 100 * parallaxFactor]
+  )
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -354,10 +372,11 @@ export function Waves({
   ])
 
   return (
-    <div
+    <motion.div
       ref={containerRef}
       style={{
         backgroundColor,
+        y: reactToScroll ? scrollParallax : 0
       }}
       className={cn(
         "absolute top-0 left-0 w-full h-full overflow-hidden",
@@ -376,6 +395,6 @@ export function Waves({
         }}
       />
       <canvas ref={canvasRef} className="block w-full h-full" />
-    </div>
+    </motion.div>
   )
 }

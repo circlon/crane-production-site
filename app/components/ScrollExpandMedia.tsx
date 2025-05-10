@@ -62,15 +62,78 @@ const ScrollExpandMedia = ({
       
       if (newProgress !== progress) {
         setProgress(newProgress);
+        
+        // Затемняем первую секцию при скролле вниз
+        updateHeroSection(newProgress);
       }
       
       frameId = requestAnimationFrame(updateScroll);
     };
     
+    // Выносим логику обновления в отдельную функцию, чтобы можно было вызвать её и при обновлении прогресса
+    const updateHeroSection = (newProgress: number) => {
+      const heroSection = document.querySelector('#hero-section');
+      if (heroSection) {
+        // Добавляем плавный переход в цвет фона второй секции (черный)
+        // вместо применения filter: brightness()
+        const overlayOpacity = Math.min(newProgress * 1.2, 0.95); // max 95% затемнения
+        
+        // Добавляем эффект отдаления с уменьшением по мере прокрутки
+        const scale = 1 - Math.min(newProgress * 0.08, 0.06); // max 6% уменьшения
+        
+        // Применяем трансформацию
+        (heroSection as HTMLElement).style.transform = `scale(${scale})`;
+        
+        // Вместо filter: brightness используем оверлей с фоном второй секции
+        const overlay = document.querySelector('#hero-overlay');
+        if (overlay) {
+          (overlay as HTMLElement).style.opacity = String(overlayOpacity);
+        } else {
+          // Если оверлея нет, создаем его
+          const newOverlay = document.createElement('div');
+          newOverlay.id = 'hero-overlay';
+          newOverlay.style.position = 'absolute';
+          newOverlay.style.inset = '0';
+          newOverlay.style.backgroundColor = '#000'; // Цвет фона второй секции
+          newOverlay.style.opacity = String(overlayOpacity);
+          newOverlay.style.transition = 'opacity 0.3s ease-out';
+          newOverlay.style.pointerEvents = 'none';
+          newOverlay.style.zIndex = '1';
+          heroSection.appendChild(newOverlay);
+        }
+      }
+    };
+    
     frameId = requestAnimationFrame(updateScroll);
+    
+    // Обеспечиваем сохранение состояния при первоначальной загрузке
+    // и при остановке скролла
+    updateHeroSection(progress);
+    
+    // Добавляем обработчик для обновления при скролле без активного requestAnimationFrame
+    const handleScroll = () => {
+      if (!frameId) {
+        updateHeroSection(progress);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       if (frameId) cancelAnimationFrame(frameId);
+      window.removeEventListener('scroll', handleScroll);
+      
+      // Сбрасываем эффекты при размонтировании компонента
+      const heroSection = document.querySelector('#hero-section');
+      if (heroSection) {
+        (heroSection as HTMLElement).style.transform = '';
+        
+        // Удаляем оверлей при размонтировании компонента
+        const overlay = document.querySelector('#hero-overlay');
+        if (overlay) {
+          overlay.remove();
+        }
+      }
     };
   }, [progress]);
 

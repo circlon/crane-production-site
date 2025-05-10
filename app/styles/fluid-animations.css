@@ -1,0 +1,136 @@
+/**
+ * Минимальные анимации для элементов UI
+ * 
+ * Примеры использования:
+ * <div className="fluid-animate-wave fluid-delay-100">Элемент с волновым эффектом</div>
+ * <div className="fluid-animate-float fluid-delay-200">Плавающий элемент</div>
+ * 
+ * Для использования с Tailwind:
+ * @layer utilities {
+ *   .my-element {
+ *     @apply fluid-animate-float fluid-delay-200;
+ *   }
+ * }
+ */
+
+:root {
+  --fluid-animation-duration: 0.8s;
+  --fluid-animation-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --fluid-scroll-transition-timing: cubic-bezier(0.2, 0.6, 0.3, 1);
+}
+
+/* Стили для ScrollSection и эффекта затемнения */
+.fluid-section {
+  position: relative;
+  transition: background-color 0.5s var(--fluid-scroll-transition-timing);
+}
+
+.fluid-section-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: black;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.3s var(--fluid-scroll-transition-timing);
+}
+
+.fluid-section-parallax {
+  will-change: transform;
+}
+
+/* Анимации элементов */
+@keyframes fluidWave {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-15px) translateY(5px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes fluidFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Утилиты анимаций с учетом предпочтений пользователя */
+.fluid-animate-wave {
+  animation: fluidWave 8s infinite ease-in-out;
+}
+
+.fluid-animate-float {
+  animation: fluidFloat 6s infinite ease-in-out;
+}
+
+/* Классы для задержки анимации */
+.fluid-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.fluid-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.fluid-delay-300 {
+  animation-delay: 0.3s;
+}
+
+/* Уважаем предпочтения пользователей по уменьшению движения */
+@media (prefers-reduced-motion: reduce) {
+  .fluid-animate-wave,
+  .fluid-animate-float {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Новые стили для плавного затемнения и эффекта отдаления при прокрутке */
+.fluid-section {
+  position: relative;
+  will-change: transform, opacity;
+  transition: transform 0.5s var(--fluid-scroll-transition-timing),
+              opacity 0.5s var(--fluid-scroll-transition-timing);
+}
+
+.fluid-section-parallax {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.fluid-section-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.5));
+  opacity: 0;
+  transition: opacity 0.6s var(--fluid-scroll-transition-timing);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Примечание: классы typography и smooth scrolling перенесены 
+   в глобальные стили или заменены утилитами Tailwind */
+
+/* Переход между секциями */
+#hero-section {
+  transition: transform 0.4s var(--fluid-scroll-transition-timing),
+              filter 0.4s var(--fluid-scroll-transition-timing),
+              opacity 0.4s var(--fluid-scroll-transition-timing);
+  will-change: transform, filter, opacity;
+  transform-origin: center bottom;
+} 

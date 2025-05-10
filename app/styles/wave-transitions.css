@@ -1,0 +1,90 @@
+/* Wave transitions and animations */
+:root {
+  --wave-primary: black;
+  --wave-secondary: #0f0f0f;
+  --wave-height: 120px;
+  --wave-animation-duration: 3s;
+  --wave-animation-ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Main container styles */
+.wave-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Wave animations */
+@keyframes waveFlow {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-25px) translateY(15px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes waveHeight {
+  0% {
+    d: path("M0,100 C250,130 750,70 1920,100 V100 H0 Z");
+  }
+  50% {
+    d: path("M0,100 C250,65 750,135 1920,100 V100 H0 Z");
+  }
+  100% {
+    d: path("M0,100 C250,130 750,70 1920,100 V100 H0 Z");
+  }
+}
+
+/* Liquid section transitions */
+.liquid-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, var(--wave-primary));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Helpers for smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Fluid typography */
+.fluid-text-xl {
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 1.2;
+}
+
+.fluid-text-2xl {
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 1.1;
+}
+
+.fluid-text-3xl {
+  font-size: clamp(4rem, 8vw, 8rem);
+  line-height: 1;
+}
+
+/* Section padding */
+.section-padding {
+  padding: clamp(3rem, 10vh, 8rem) clamp(1rem, 5vw, 3rem);
+} 
