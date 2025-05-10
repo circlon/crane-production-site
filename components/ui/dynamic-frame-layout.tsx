@@ -20,6 +20,7 @@ interface Frame {
   startTime?: number
   title?: string
   vkVideoSrc?: string
+  poster?: string
 }
 
 interface FrameComponentProps {
@@ -41,6 +42,8 @@ interface FrameComponentProps {
   title?: string
   isDiscovered: boolean
   vkVideoSrc?: string
+  poster?: string
+  isMobile: boolean
 }
 
 function FrameComponent({
@@ -62,6 +65,8 @@ function FrameComponent({
   title,
   isDiscovered,
   vkVideoSrc,
+  poster,
+  isMobile,
 }: FrameComponentProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoError, setVideoError] = useState(false)
@@ -90,7 +95,7 @@ function FrameComponent({
   
   // Управляем локальными видео через useEffect
   useEffect(() => {
-    if (isHovered) {
+    if (isHovered && !isMobile) {
       setIsAnimating(true);
       // Воспроизводим только локальные видео (не VK)
       videoRef.current?.play().catch(() => {
@@ -100,7 +105,7 @@ function FrameComponent({
       setIsAnimating(false);
       videoRef.current?.pause();
     }
-  }, [isHovered]);
+  }, [isHovered, isMobile]);
 
   // Обработчик клика на фрейм
   const handleFrameClick = useCallback(() => {
@@ -123,6 +128,9 @@ function FrameComponent({
       clickResetTimerRef.current = null;
     }, ANIMATION_TIMINGS.HIDE_DURATION + 50); // Добавляем небольшой запас времени
   }, [vkVideoSrc]);
+
+  // Генерируем URL для постера, если он не указан
+  const posterUrl = poster || video.replace(/\.(mp4|webm|ogg)$/, '.jpg');
 
   return (
     <>
@@ -164,15 +172,28 @@ function FrameComponent({
                 </div>
               ) : (
                 <>
-                  <video
-                    className="w-full h-full object-cover"
-                    src={video}
-                    loop
-                    muted
-                    playsInline
-                    ref={videoRef}
-                    onError={() => setVideoError(true)}
-                  />
+                  {/* На мобильных устройствах используем изображение вместо видео */}
+                  {isMobile ? (
+                    <div 
+                      className="w-full h-full bg-cover bg-center"
+                      style={{ 
+                        backgroundImage: `url(${posterUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    />
+                  ) : (
+                    <video
+                      className="w-full h-full object-cover"
+                      src={video}
+                      poster={posterUrl}
+                      loop
+                      muted
+                      playsInline
+                      ref={videoRef}
+                      onError={() => setVideoError(true)}
+                    />
+                  )}
                   
                   {/* Темный оверлей с киберпанк текстом */}
                   <div 
@@ -251,7 +272,7 @@ function FrameComponent({
                   backgroundImage: `url(${edgeVertical})`,
                   backgroundSize: "64px auto",
                   backgroundRepeat: "repeat-y",
-                  transform: "scaleX(-1)",
+                  transform: "rotate(180deg)",
                 }}
               />
             </div>
@@ -259,16 +280,19 @@ function FrameComponent({
         </div>
       </div>
       
-      {/* Модальное окно для VK видео */}
-      {vkVideoSrc && (
-        <VideoModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          videoSrc={vkVideoSrc} 
+      {/* Модальное окно */}
+      {isModalOpen && vkVideoSrc && (
+        <VideoModal
+          videoSrc={vkVideoSrc}
+          onClose={() => setIsModalOpen(false)}
         />
       )}
     </>
   )
+}
+
+interface DiscoveredState {
+  [key: number]: boolean;
 }
 
 interface DynamicFrameLayoutProps {
@@ -286,96 +310,151 @@ export function DynamicFrameLayout({
   hoverSize = 6,
   gapSize = 4
 }: DynamicFrameLayoutProps) {
-  const [frames] = useState<Frame[]>(initialFrames)
-  const [hovered, setHovered] = useState<{ row: number; col: number } | null>(null)
-  const [activeFrameId, setActiveFrameId] = useState<number | null>(null)
-  const [discoveredFrames, setDiscoveredFrames] = useState<number[]>([])
+  const [frames, setFrames] = useState(initialFrames)
+  const [hoveredFrame, setHoveredFrame] = useState<number | null>(null)
+  const [activeFrame, setActiveFrame] = useState<number | null>(null)
+  const [discoveredState, setDiscoveredState] = useState<DiscoveredState>({})
+  // Определяем, является ли устройство мобильным
+  const [isMobile, setIsMobile] = useState(false)
+  
+  // Определяем мобильное устройство
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
+  // Размеры строк - адаптивные для мобильных устройств
   const getRowSizes = () => {
-    if (hovered === null) return "4fr 4fr 4fr"
-    const { row } = hovered
-    const nonHoveredSize = (12 - hoverSize) / 2
-    return [0, 1, 2].map((r) => (r === row ? `${hoverSize}fr` : `${nonHoveredSize}fr`)).join(" ")
-  }
+    if (isMobile) {
+      // Более компактное отображение на мобильных
+      return ["1fr", "1fr", "1fr"];
+    }
+    return ["1fr", "1fr", "1fr"];
+  };
 
+  // Размеры колонок - адаптивные для мобильных устройств
   const getColSizes = () => {
-    if (hovered === null) return "4fr 4fr 4fr"
-    const { col } = hovered
-    const nonHoveredSize = (12 - hoverSize) / 2
-    return [0, 1, 2].map((c) => (c === col ? `${hoverSize}fr` : `${nonHoveredSize}fr`)).join(" ")
-  }
+    if (isMobile) {
+      // Одна колонка на очень маленьких экранах
+      if (window.innerWidth < 480) {
+        return ["1fr"];
+      }
+      // Две колонки на средних мобильных
+      return ["1fr", "1fr"];
+    }
+    return ["1fr", "1fr", "1fr"];
+  };
 
   const getTransformOrigin = (x: number, y: number) => {
-    const vertical = y === 0 ? "top" : y === 4 ? "center" : "bottom"
-    const horizontal = x === 0 ? "left" : x === 4 ? "center" : "right"
-    return `${vertical} ${horizontal}`
-  }
+    return `${x * 50}% ${y * 50}%`;
+  };
 
   const handleMouseEnter = (row: number, col: number, frameId: number) => {
-    setHovered({ row, col });
-    setActiveFrameId(frameId);
+    setHoveredFrame(frameId);
+    setDiscoveredState(prev => ({...prev, [frameId]: true}));
     
-    // Отмечаем фрейм как открытый, если это первое наведение
-    if (!discoveredFrames.includes(frameId)) {
-      setDiscoveredFrames((prev) => [...prev, frameId]);
-    }
-  }
+    setFrames(frames.map(frame => ({
+      ...frame,
+      isHovered: frame.id === frameId
+    })));
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredFrame(null);
+    
+    setFrames(frames.map(frame => ({
+      ...frame,
+      isHovered: false
+    })));
+  };
+
+  // Создаем "сетку" с учетом позиций фреймов из данных
+  const gridData = frames.map(frame => ({
+    row: Math.floor(frame.defaultPos.y / 4),
+    col: Math.floor(frame.defaultPos.x / 4),
+    frame
+  }));
 
   return (
-    <div
-      className={`relative w-full h-full ${className}`}
-      style={{
-        display: "grid",
-        gridTemplateRows: getRowSizes(),
-        gridTemplateColumns: getColSizes(),
-        gap: `${gapSize}px`,
-        transition: "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
-      }}
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+      className={`w-full h-full ${className}`}
     >
-      {frames.map((frame) => {
-        const row = Math.floor(frame.defaultPos.y / 4)
-        const col = Math.floor(frame.defaultPos.x / 4)
-        const transformOrigin = getTransformOrigin(frame.defaultPos.x, frame.defaultPos.y)
-        const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
-        const isDiscovered = discoveredFrames.includes(frame.id);
-
-        return (
-          <motion.div
-            key={frame.id}
-            className="relative"
-            style={{
-              transformOrigin,
-              transition: "transform 0.4s ease",
-            }}
-            onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
-            onMouseLeave={() => {
-              setHovered(null);
-              setActiveFrameId(null);
-            }}
-          >
-            <FrameComponent
-              video={frame.video}
-              width="100%"
-              height="100%"
-              className="absolute inset-0"
-              corner={frame.corner}
-              edgeHorizontal={frame.edgeHorizontal}
-              edgeVertical={frame.edgeVertical}
-              mediaSize={frame.mediaSize}
-              borderThickness={frame.borderThickness}
-              borderSize={frame.borderSize}
-              showFrame={showFrames}
-              isHovered={isCurrentFrameHovered}
-              frameId={frame.id}
-              activeFrameId={activeFrameId}
-              startTime={frame.startTime}
-              title={frame.title}
-              isDiscovered={isDiscovered}
-              vkVideoSrc={frame.vkVideoSrc}
-            />
-          </motion.div>
-        )
-      })}
-    </div>
-  )
+      <div 
+        className="w-full h-full grid"
+        style={{ 
+          display: "grid",
+          gridTemplateRows: getRowSizes().join(" "),
+          gridTemplateColumns: getColSizes().join(" "),
+          gap: `${gapSize}px`,
+          position: "relative",
+          // Добавляем адаптивные стили для мобильных
+          width: "100%",
+          height: isMobile ? "auto" : "100%", // На мобильных - автовысота
+          minHeight: isMobile ? "100vh" : "auto" // Минимальная высота на мобильных
+        }}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Создаем сетку на основе данных */}
+        {gridData.map(({ row, col, frame }) => {
+          // Определяем, куда входит фрейм в зависимости от количества колонок
+          const colSize = getColSizes().length;
+          const adjustedCol = colSize === 1 ? 0 : (colSize === 2 ? col % 2 : col);
+          
+          return (
+            <div 
+              key={frame.id}
+              style={{ 
+                gridRow: isMobile 
+                  ? (colSize === 1 ? frame.id : Math.floor((frame.id - 1) / colSize) + 1) 
+                  : row + 1,
+                gridColumn: isMobile 
+                  ? (colSize === 1 ? 1 : (frame.id % colSize === 0 ? colSize : frame.id % colSize))
+                  : col + 1,
+                transformOrigin: getTransformOrigin(col, row),
+                // Адаптивный размер ячейки
+                width: "100%",
+                height: isMobile ? "33vh" : "100%",
+                minHeight: isMobile ? "250px" : "auto"
+              }}
+              onMouseEnter={() => !isMobile && handleMouseEnter(row, col, frame.id)}
+              onClick={() => isMobile && handleMouseEnter(row, col, frame.id)}
+            >
+              <FrameComponent
+                video={frame.video}
+                poster={frame.poster}
+                width="100%"
+                height="100%"
+                corner={frame.corner}
+                edgeHorizontal={frame.edgeHorizontal}
+                edgeVertical={frame.edgeVertical}
+                mediaSize={frame.mediaSize}
+                borderThickness={frame.borderThickness}
+                borderSize={frame.borderSize}
+                showFrame={showFrames}
+                isHovered={frame.isHovered}
+                frameId={frame.id}
+                activeFrameId={activeFrame}
+                startTime={frame.startTime}
+                title={frame.title}
+                isDiscovered={!!discoveredState[frame.id]}
+                vkVideoSrc={frame.vkVideoSrc}
+                isMobile={isMobile}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
 }

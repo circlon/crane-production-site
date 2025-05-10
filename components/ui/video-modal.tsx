@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 interface VideoModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   videoSrc: string;
 }
 
-export function VideoModal({ isOpen, onClose, videoSrc }: VideoModalProps) {
+export function VideoModal({ isOpen = true, onClose, videoSrc }: VideoModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   
   // Закрытие модального окна по клику на фон
