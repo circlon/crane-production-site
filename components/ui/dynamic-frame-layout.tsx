@@ -86,26 +86,33 @@ function FrameComponent({
     }
   }, [])
   
-  // Устанавливаем начальный кадр при загрузке видео
+  // Управляем видео в зависимости от состояния
   useEffect(() => {
     if (videoRef.current) {
+      // Устанавливаем начальное время
       videoRef.current.currentTime = startTime;
+      
+      if (isHovered) {
+        setIsAnimating(true);
+        // Пытаемся воспроизвести видео
+        const playPromise = videoRef.current.play();
+        
+        // Обрабатываем ошибки воспроизведения
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.log(`Воспроизведение видео для фрейма ${frameId} не удалось:`, error);
+            setVideoError(true);
+          });
+        }
+      } else {
+        setIsAnimating(false);
+        // Ставим на паузу если видео воспроизводится
+        if (!videoRef.current.paused) {
+          videoRef.current.pause();
+        }
+      }
     }
-  }, [startTime]);
-  
-  // Управляем локальными видео через useEffect
-  useEffect(() => {
-    if (isHovered && !isMobile) {
-      setIsAnimating(true);
-      // Воспроизводим только локальные видео (не VK)
-      videoRef.current?.play().catch(() => {
-        setVideoError(true)
-      })
-    } else {
-      setIsAnimating(false);
-      videoRef.current?.pause();
-    }
-  }, [isHovered, isMobile]);
+  }, [isHovered, frameId, startTime]);
 
   // Обработчик клика на фрейм
   const handleFrameClick = useCallback(() => {
@@ -115,6 +122,13 @@ function FrameComponent({
     }
     
     setIsClicked(true); // Запускаем анимацию закрытия
+    
+    // Для мобильных устройств, пытаемся запустить воспроизведение при клике
+    if (isMobile && videoRef.current) {
+      videoRef.current.play().catch(error => {
+        console.log('Ошибка воспроизведения после клика:', error);
+      });
+    }
     
     if (vkVideoSrc) {
       // Открываем модальное окно для VK видео
@@ -127,17 +141,10 @@ function FrameComponent({
       setIsClicked(false);
       clickResetTimerRef.current = null;
     }, ANIMATION_TIMINGS.HIDE_DURATION + 50); // Добавляем небольшой запас времени
-  }, [vkVideoSrc]);
+  }, [vkVideoSrc, isMobile]);
 
-  // Генерируем URL для постера, если он не указан
-  const posterUrl = poster || video.replace(/\.(mp4|webm|ogg)$/, '.jpg');
-  
-  // Добавляем обработчик ошибки для изображений
-  const [imageError, setImageError] = useState(false);
-  
-  // Используем fallback изображение, если постер не найден
-  const fallbackImage = '/images/frames/video-poster-default.jpg';
-  const displayImage = imageError ? fallbackImage : posterUrl;
+  // Дефолтный постер для всех видео
+  const defaultPoster = '/images/frames/video-poster-default.jpg';
 
   return (
     <>
@@ -179,30 +186,17 @@ function FrameComponent({
                 </div>
               ) : (
                 <>
-                  {/* На мобильных устройствах используем изображение вместо видео */}
-                  {isMobile ? (
-                    <div 
-                      className="w-full h-full bg-cover bg-center"
-                      style={{ 
-                        backgroundImage: `url(${displayImage})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundColor: '#000'
-                      }}
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <video
-                      className="w-full h-full object-cover"
-                      src={video}
-                      poster={displayImage}
-                      loop
-                      muted
-                      playsInline
-                      ref={videoRef}
-                      onError={() => setVideoError(true)}
-                    />
-                  )}
+                  <video
+                    className="w-full h-full object-cover"
+                    src={video}
+                    poster={poster || defaultPoster}
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    ref={videoRef}
+                    onError={() => setVideoError(true)}
+                  />
                   
                   {/* Темный оверлей с киберпанк текстом */}
                   <div 
@@ -326,19 +320,41 @@ export function DynamicFrameLayout({
   // Определяем, является ли устройство мобильным
   const [isMobile, setIsMobile] = useState(false)
   
-  // Определяем мобильное устройство
+  // Определяем мобильное устройство более надежно
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      // Проверяем не только по размеру экрана, но и по наличию тач-ивентов
+      const hasTouchScreen = (
+        ('ontouchstart' in window) || 
+        (navigator.maxTouchPoints > 0) || 
+        (navigator.msMaxTouchPoints > 0)
+      );
+      const isSmallScreen = window.innerWidth < 768;
+      
+      // Устройство считается мобильным, если у него есть тач-скрин ИЛИ маленький экран
+      setIsMobile(hasTouchScreen || isSmallScreen);
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
+    // Инициируем пользовательское взаимодействие на мобильных устройствах
+    if (isMobile) {
+      // Добавляем обработчик события для разблокировки автовоспроизведения
+      const unlockAutoplay = () => {
+        document.removeEventListener('touchstart', unlockAutoplay);
+        document.removeEventListener('click', unlockAutoplay);
+        console.log('Разблокировка автовоспроизведения видео');
+      };
+      
+      document.addEventListener('touchstart', unlockAutoplay);
+      document.addEventListener('click', unlockAutoplay);
+    }
+    
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
-  }, []);
+  }, [isMobile]);
 
   // Размеры строк - адаптивные для мобильных устройств
   const getRowSizes = () => {
