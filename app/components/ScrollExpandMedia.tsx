@@ -252,10 +252,26 @@ const ScrollExpandMedia = ({
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
+                  ) : isMobile ? (
+                    // На мобильных устройствах используем изображение вместо видео
+                    <div
+                      className="w-full h-full bg-cover bg-center rounded-xl"
+                      style={{
+                        backgroundImage: `url(${posterSrc || mediaSrc.replace(/\.(mp4|webm|ogg)$/, '.jpg')})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundColor: '#000'
+                      }}
+                      onError={(e) => {
+                        // Если изображение не загрузилось, используем дефолтное
+                        const target = e.currentTarget as HTMLDivElement;
+                        target.style.backgroundImage = 'url(/images/frames/video-poster-default.jpg)';
+                      }}
+                    />
                   ) : (
                     <video
                       src={mediaSrc}
-                      poster={posterSrc}
+                      poster={posterSrc || '/images/frames/video-poster-default.jpg'}
                       autoPlay
                       muted
                       loop
@@ -264,7 +280,9 @@ const ScrollExpandMedia = ({
                       className="w-full h-full object-cover rounded-xl"
                       onError={(e) => {
                         const target = e.currentTarget as HTMLVideoElement;
-                        target.style.display = 'none';
+                        // Вместо скрытия видео, покажем постер или черный фон
+                        target.poster = '/images/frames/video-poster-default.jpg';
+                        target.style.backgroundColor = '#000';
                       }}
                     />
                   )}

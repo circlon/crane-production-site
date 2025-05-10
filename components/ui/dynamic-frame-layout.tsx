@@ -131,6 +131,13 @@ function FrameComponent({
 
   // Генерируем URL для постера, если он не указан
   const posterUrl = poster || video.replace(/\.(mp4|webm|ogg)$/, '.jpg');
+  
+  // Добавляем обработчик ошибки для изображений
+  const [imageError, setImageError] = useState(false);
+  
+  // Используем fallback изображение, если постер не найден
+  const fallbackImage = '/images/frames/video-poster-default.jpg';
+  const displayImage = imageError ? fallbackImage : posterUrl;
 
   return (
     <>
@@ -177,16 +184,18 @@ function FrameComponent({
                     <div 
                       className="w-full h-full bg-cover bg-center"
                       style={{ 
-                        backgroundImage: `url(${posterUrl})`,
+                        backgroundImage: `url(${displayImage})`,
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        backgroundColor: '#000'
                       }}
+                      onError={() => setImageError(true)}
                     />
                   ) : (
                     <video
                       className="w-full h-full object-cover"
                       src={video}
-                      poster={posterUrl}
+                      poster={displayImage}
                       loop
                       muted
                       playsInline
