@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { VideoModal } from "./video-modal"
 import { CyberText } from "./cyber-text"
-import { ANIMATION_TIMINGS } from "@/lib/constants/animation-timings"
+import { ANIMATION_TIMINGS, CSS_VARIABLES } from "@/lib/constants/animation-timings"
 
 interface Frame {
   id: number
@@ -43,7 +43,6 @@ interface FrameComponentProps {
   isDiscovered: boolean
   vkVideoSrc?: string
   poster?: string
-  isMobile: boolean
 }
 
 function FrameComponent({
@@ -66,7 +65,6 @@ function FrameComponent({
   isDiscovered,
   vkVideoSrc,
   poster,
-  isMobile,
 }: FrameComponentProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoError, setVideoError] = useState(false)
@@ -86,49 +84,35 @@ function FrameComponent({
     }
   }, [])
   
-  // Управляем видео в зависимости от состояния
+  // Устанавливаем начальный кадр при загрузке видео
   useEffect(() => {
     if (videoRef.current) {
-      // Устанавливаем начальное время
       videoRef.current.currentTime = startTime;
-      
-      if (isHovered) {
-        setIsAnimating(true);
-        // Пытаемся воспроизвести видео
-        const playPromise = videoRef.current.play();
-        
-        // Обрабатываем ошибки воспроизведения
-        if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            console.log(`Воспроизведение видео для фрейма ${frameId} не удалось:`, error);
-            setVideoError(true);
-          });
-        }
-      } else {
-        setIsAnimating(false);
-        // Ставим на паузу если видео воспроизводится
-        if (!videoRef.current.paused) {
-          videoRef.current.pause();
-        }
-      }
     }
-  }, [isHovered, frameId, startTime]);
+  }, [startTime]);
+  
+  // Управляем локальными видео через useEffect
+  useEffect(() => {
+    if (isHovered) {
+      setIsAnimating(true);
+      // Воспроизводим только локальные видео (не VK)
+      videoRef.current?.play().catch(() => {
+        setVideoError(true)
+      })
+    } else {
+      setIsAnimating(false);
+      videoRef.current?.pause();
+    }
+  }, [isHovered]);
 
   // Обработчик клика на фрейм
-  const handleFrameClick = useCallback(() => {
+  const handleFrameClick = () => {
     // Очищаем предыдущий таймер сброса, если он существует
     if (clickResetTimerRef.current) {
       clearTimeout(clickResetTimerRef.current)
     }
     
     setIsClicked(true); // Запускаем анимацию закрытия
-    
-    // Для мобильных устройств, пытаемся запустить воспроизведение при клике
-    if (isMobile && videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.log('Ошибка воспроизведения после клика:', error);
-      });
-    }
     
     if (vkVideoSrc) {
       // Открываем модальное окно для VK видео
@@ -141,7 +125,7 @@ function FrameComponent({
       setIsClicked(false);
       clickResetTimerRef.current = null;
     }, ANIMATION_TIMINGS.HIDE_DURATION + 50); // Добавляем небольшой запас времени
-  }, [vkVideoSrc, isMobile]);
+  };
 
   // Дефолтный постер для всех видео
   const defaultPoster = '/images/frames/video-poster-default.jpg';
@@ -202,21 +186,21 @@ function FrameComponent({
                   <div 
                     className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
                     style={{
-                      opacity: 0.5,
-                      transition: "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                      opacity: isHovered ? 0 : 0.5,
+                      transition: `opacity ${CSS_VARIABLES.HIDE_DURATION_CSS} cubic-bezier(0.16, 1, 0.3, 1)`,
                       backdropFilter: "blur(2px)",
                     }}
                   >
                     <CyberText
                       isHovered={isHovered}
                       isClicked={isClicked}
-                      className="text-white font-mono text-2xl tracking-wider"
+                      className="text-white font-mono text-2xl tracking-wider opacity-75"
                       initialState={isDiscovered ? 'hidden' : 'visible'}
                       autoRevealDelay={7000}
                     >
                       <div className="px-4 py-2 relative text-center">
                         <span>{title ? title : `Frame ${frameId}`}</span>
-                        <div className="absolute bottom-0 left-0 right-0 h-px bg-white opacity-50" />
+                        <div className="absolute bottom-0 left-0 right-0 h-px bg-white opacity-30" />
                       </div>
                     </CyberText>
                   </div>
@@ -314,91 +298,50 @@ export function DynamicFrameLayout({
   gapSize = 4
 }: DynamicFrameLayoutProps) {
   const [frames, setFrames] = useState(initialFrames)
-  const [hoveredFrame, setHoveredFrame] = useState<number | null>(null)
-  const [activeFrame, setActiveFrame] = useState<number | null>(null)
+  const [hovered, setHovered] = useState<{ row: number; col: number } | null>(null)
+  const [activeFrameId, setActiveFrameId] = useState<number | null>(null)
   const [discoveredState, setDiscoveredState] = useState<DiscoveredState>({})
-  // Определяем, является ли устройство мобильным
-  const [isMobile, setIsMobile] = useState(false)
-  
-  // Определяем мобильное устройство более надежно
-  useEffect(() => {
-    const checkMobile = () => {
-      // Проверяем не только по размеру экрана, но и по наличию тач-ивентов
-      const hasTouchScreen = (
-        ('ontouchstart' in window) || 
-        (navigator.maxTouchPoints > 0)
-      );
-      const isSmallScreen = window.innerWidth < 768;
-      
-      // Устройство считается мобильным, если у него есть тач-скрин ИЛИ маленький экран
-      setIsMobile(hasTouchScreen || isSmallScreen);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    // Инициируем пользовательское взаимодействие на мобильных устройствах
-    if (isMobile) {
-      // Добавляем обработчик события для разблокировки автовоспроизведения
-      const unlockAutoplay = () => {
-        document.removeEventListener('touchstart', unlockAutoplay);
-        document.removeEventListener('click', unlockAutoplay);
-        console.log('Разблокировка автовоспроизведения видео');
-      };
-      
-      document.addEventListener('touchstart', unlockAutoplay);
-      document.addEventListener('click', unlockAutoplay);
-    }
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, [isMobile]);
 
-  // Размеры строк - адаптивные для мобильных устройств
   const getRowSizes = () => {
-    if (isMobile) {
-      // Более компактное отображение на мобильных
-      return ["1fr", "1fr", "1fr"];
-    }
-    return ["1fr", "1fr", "1fr"];
-  };
+    if (hovered === null) return "4fr 4fr 4fr"
+    const { row } = hovered
+    const nonHoveredSize = (12 - hoverSize) / 2
+    return [0, 1, 2].map((r) => (r === row ? `${hoverSize}fr` : `${nonHoveredSize}fr`)).join(" ")
+  }
 
-  // Размеры колонок - адаптивные для мобильных устройств
   const getColSizes = () => {
-    if (isMobile) {
-      // Одна колонка на очень маленьких экранах
-      if (window.innerWidth < 480) {
-        return ["1fr"];
-      }
-      // Две колонки на средних мобильных
-      return ["1fr", "1fr"];
-    }
-    return ["1fr", "1fr", "1fr"];
-  };
+    if (hovered === null) return "4fr 4fr 4fr"
+    const { col } = hovered
+    const nonHoveredSize = (12 - hoverSize) / 2
+    return [0, 1, 2].map((c) => (c === col ? `${hoverSize}fr` : `${nonHoveredSize}fr`)).join(" ")
+  }
 
   const getTransformOrigin = (x: number, y: number) => {
-    return `${x * 50}% ${y * 50}%`;
-  };
+    const vertical = y === 0 ? "top" : y === 4 ? "center" : "bottom"
+    const horizontal = x === 0 ? "left" : x === 4 ? "center" : "right"
+    return `${vertical} ${horizontal}`
+  }
 
   const handleMouseEnter = (row: number, col: number, frameId: number) => {
-    setHoveredFrame(frameId);
+    setHovered({ row, col });
+    setActiveFrameId(frameId);
     setDiscoveredState(prev => ({...prev, [frameId]: true}));
     
     setFrames(frames.map(frame => ({
       ...frame,
       isHovered: frame.id === frameId
     })));
-  };
-
+  }
+  
   const handleMouseLeave = () => {
-    setHoveredFrame(null);
+    setHovered(null);
+    setActiveFrameId(null);
     
     setFrames(frames.map(frame => ({
       ...frame,
       isHovered: false
     })));
-  };
+  }
 
   // Создаем "сетку" с учетом позиций фреймов из данных
   const gridData = frames.map(frame => ({
@@ -415,48 +358,32 @@ export function DynamicFrameLayout({
       className={`w-full h-full ${className}`}
     >
       <div 
-        className="w-full h-full grid"
+        className="w-full h-full"
         style={{ 
           display: "grid",
-          gridTemplateRows: getRowSizes().join(" "),
-          gridTemplateColumns: getColSizes().join(" "),
+          gridTemplateRows: getRowSizes(),
+          gridTemplateColumns: getColSizes(),
           gap: `${gapSize}px`,
           position: "relative",
-          // Добавляем адаптивные стили для мобильных
-          width: "100%",
-          height: isMobile ? "auto" : "100%", // На мобильных - автовысота
-          minHeight: isMobile ? "100vh" : "auto" // Минимальная высота на мобильных
+          transition: "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
         }}
         onMouseLeave={handleMouseLeave}
       >
         {/* Создаем сетку на основе данных */}
         {gridData.map(({ row, col, frame }) => {
-          // Определяем, куда входит фрейм в зависимости от количества колонок
-          const colSize = getColSizes().length;
-          const adjustedCol = colSize === 1 ? 0 : (colSize === 2 ? col % 2 : col);
+          const transformOrigin = getTransformOrigin(frame.defaultPos.x, frame.defaultPos.y);
+          const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
           
           return (
             <div 
               key={frame.id}
               style={{ 
-                gridRow: isMobile 
-                  ? (colSize === 1 ? frame.id : Math.floor((frame.id - 1) / colSize) + 1) 
-                  : row + 1,
-                gridColumn: isMobile 
-                  ? (colSize === 1 ? 1 : (frame.id % colSize === 0 ? colSize : frame.id % colSize))
-                  : col + 1,
-                transformOrigin: getTransformOrigin(col, row),
-                // Добавляем увеличение при наведении
-                transform: hoveredFrame === frame.id ? `scale(${hoverSize/4})` : 'scale(1)',
-                zIndex: hoveredFrame === frame.id ? 10 : 1,
-                transition: 'all 0.3s ease-in-out',
-                // Адаптивный размер ячейки
-                width: "100%",
-                height: isMobile ? "33vh" : "100%",
-                minHeight: isMobile ? "250px" : "auto"
+                gridRow: row + 1,
+                gridColumn: col + 1,
+                transformOrigin,
+                transition: "transform 0.4s ease",
               }}
-              onMouseEnter={() => !isMobile && handleMouseEnter(row, col, frame.id)}
-              onClick={() => isMobile && handleMouseEnter(row, col, frame.id)}
+              onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
             >
               <FrameComponent
                 video={frame.video}
@@ -472,12 +399,11 @@ export function DynamicFrameLayout({
                 showFrame={showFrames}
                 isHovered={frame.isHovered}
                 frameId={frame.id}
-                activeFrameId={activeFrame}
+                activeFrameId={activeFrameId}
                 startTime={frame.startTime}
                 title={frame.title}
                 isDiscovered={!!discoveredState[frame.id]}
                 vkVideoSrc={frame.vkVideoSrc}
-                isMobile={isMobile}
               />
             </div>
           );
