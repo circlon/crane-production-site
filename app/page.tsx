@@ -137,7 +137,7 @@ export default function Home() {
     <main className="relative bg-transparent overflow-x-hidden w-screen m-0 p-0">
       {/* Основное содержимое начинается здесь */}      
       {/* Hero section с волнами */}
-      <section id="hero-section" className="relative h-screen w-screen overflow-hidden m-0 p-0 pb-1">
+      <section id="hero-section" className="relative h-screen w-screen overflow-hidden m-0 p-0 pb-1" style={{ top: 0 }}>
         <Waves lineColor="rgba(255, 255, 255, 0.5)" className="absolute inset-0" />
         <div className="h-screen flex flex-col items-center justify-center text-white relative z-10">
           <div className="max-w-6xl mx-auto text-center px-4">

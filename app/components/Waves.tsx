@@ -436,7 +436,7 @@ export function Waves({
       style={{
         backgroundColor,
         y: reactToScroll ? scrollParallax : 0,
-        marginTop: 0,
+        marginTop: "-5px",
         marginBottom: "-2px",
         position: 'absolute',
         top: 0,
@@ -444,7 +444,7 @@ export function Waves({
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: 'calc(100vh + 5px)',
+        height: 'calc(100vh + 10px)',
       }}
       className={cn(
         "overflow-hidden",
