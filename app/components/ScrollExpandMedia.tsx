@@ -64,10 +64,11 @@ const ScrollExpandMedia = ({
       const rawProgress = 1 - Math.max(0, Math.min(1, (current - end) / total));
       
       // Добавляем плавность к изменению прогресса (интерполяция)
-      const smoothFactor = 0.08; // Коэффициент сглаживания (меньше = плавнее)
+      const smoothFactor = 0.3; // Увеличиваем для более прямой реакции на скролл (было 0.08)
       const newProgress = prevProgressRef.current + (rawProgress - prevProgressRef.current) * smoothFactor;
       prevProgressRef.current = newProgress; // Сохраняем для следующего кадра
       
+      // Избегаем слишком частых обновлений состояния React
       if (Math.abs(newProgress - progress) > 0.001) {
         setProgress(newProgress);
         
@@ -83,8 +84,8 @@ const ScrollExpandMedia = ({
       const heroSection = document.querySelector('#hero-section');
       if (heroSection) {
         // Добавляем плавный переход в цвет фона второй секции (черный)
-        // вместо применения filter: brightness()
-        const overlayOpacity = Math.min(newProgress * 1.2, 0.95); // max 95% затемнения
+        // но сохраняем шумовой эффект видимым
+        const overlayOpacity = Math.min(newProgress * 0.8, 0.7); // Снижаем максимальное затемнение
         
         // Добавляем эффект отдаления с уменьшением по мере прокрутки
         const scale = 1 - Math.min(newProgress * 0.08, 0.06); // max 6% уменьшения
@@ -102,11 +103,15 @@ const ScrollExpandMedia = ({
           newOverlay.id = 'hero-overlay';
           newOverlay.style.position = 'absolute';
           newOverlay.style.inset = '0';
-          newOverlay.style.backgroundColor = '#000'; // Цвет фона второй секции
+          newOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Полупрозрачный черный
           newOverlay.style.opacity = String(overlayOpacity);
           newOverlay.style.transition = 'opacity 0.3s ease-out';
           newOverlay.style.pointerEvents = 'none';
-          newOverlay.style.zIndex = '1';
+          newOverlay.style.mixBlendMode = 'multiply'; // Важно: это сохранит текстуру шума
+          
+          // Размещаем оверлей между волнами и контентом
+          newOverlay.style.zIndex = '1'; 
+          
           heroSection.appendChild(newOverlay);
         }
       }
@@ -228,12 +233,12 @@ const ScrollExpandMedia = ({
                 maxWidth: '95vw',
                 maxHeight: '85vh',
                 boxShadow: '0px 0px 50px rgba(0, 0, 0, 0.3)',
-                transition: 'width 0.05s ease-out, height 0.05s ease-out',
+                willChange: 'width, height',
               }}
             >
               {/* Видео контент */}
               {mediaType === 'video' && (
-                <div className="relative w-full h-full pointer-events-none">
+                <div className="relative w-full h-full pointer-events-none" data-video-content>
                   {mediaSrc.includes('youtube.com') ? (
                     <iframe
                       width="100%"
