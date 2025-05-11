@@ -436,10 +436,17 @@ export function Waves({
       style={{
         backgroundColor,
         y: reactToScroll ? scrollParallax : 0,
-        margin: "-5px",
+        marginTop: 0,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh'
       }}
       className={cn(
-        "absolute inset-0 w-full h-full overflow-hidden",
+        "overflow-hidden",
         className,
       )}
     >
