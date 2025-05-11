@@ -76,3 +76,38 @@
     @apply bg-background text-foreground;
   }
 } 
+
+/* Стили для слоев и шумового эффекта */
+.background-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content-layer {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.noise-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Видео-контейнеры уже находятся на верхнем контентном слое,
+   поэтому им не нужны специальные z-index */
+video, iframe {
+  position: relative;
+  z-index: auto;
+}
+

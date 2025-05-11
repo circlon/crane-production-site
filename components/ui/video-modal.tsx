@@ -99,6 +99,7 @@ export function VideoModal({ isOpen = true, onClose, videoSrc }: VideoModalProps
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 25 }}
+            data-video-content
           >
             {/* Кнопка закрытия */}
             <button

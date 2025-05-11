@@ -132,26 +132,23 @@ const frameData = [
 ];
 
 export default function Home() {
+
   return (
-    <main className="relative bg-black overflow-x-hidden">
-      {/* Global noise effect for all sections */}
-      <div className="fixed inset-0 z-10 pointer-events-none">
-        <NoiseEffect patternAlpha={10} patternRefreshInterval={4} />
-      </div>
-      
+    <main className="relative bg-transparent overflow-x-hidden">
+      {/* Основное содержимое начинается здесь */}      
       {/* Hero section с волнами */}
-      <section id="hero-section" className="relative h-screen overflow-hidden">
-        <Waves lineColor="rgba(255, 255, 255, 0.5)" />
+      <section id="hero-section" className="relative h-screen w-full overflow-hidden -mt-[1px]">
+        <Waves lineColor="rgba(255, 255, 255, 0.5)" className="absolute inset-0" />
         <div className="h-screen flex flex-col items-center justify-center text-white relative z-10">
           <div className="max-w-6xl mx-auto text-center px-4">
             <FluidTitle 
               text="CRANE PRODUCTION" 
               color="white"
-              className="mb-6"
+              className="mb-6 scale-125 transform origin-center"
               delay={0.5}
             />
-            <p className="text-xl md:text-2xl mt-4">
-              Capturing moments that matter
+            <p className="text-xl md:text-2xl mt-4 text-gray-400 opacity-70">
+              Frame Moments, Build Brands
             </p>
           </div>
           
@@ -185,7 +182,7 @@ export default function Home() {
       </ScrollExpandMedia>
 
       {/* Video Frame Grid section */}
-      <section className="flex items-center justify-center bg-black h-screen">
+      <section className="flex items-center justify-center bg-transparent h-screen">
         <div className="w-full h-full px-4 py-4">
           <DynamicFrameLayout 
             frames={frameData} 

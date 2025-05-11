@@ -20,7 +20,7 @@ export function VideoMedia({ src, isHovered }: MediaProps) {
   const placeholderColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 30%)`;
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" data-video-content>
       {src ? (
         <video
           ref={videoRef}

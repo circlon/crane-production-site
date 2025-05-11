@@ -12,11 +12,9 @@ export function Frame({ children, showFrame, borderThickness, borderSize, title,
     <div 
       className="frame-container relative w-full h-full overflow-hidden"
       ref={frameRef}
+      data-video-frame
     >
-      {/* Noise effect for the entire frame */}
-      <div className="absolute inset-0 overflow-hidden" style={{ pointerEvents: 'none' }}>
-        <NoiseEffect patternAlpha={8} patternRefreshInterval={4} />
-      </div>
+      {/* Noise effect убран для исключения шума на видео */}
       
       <div
         className="absolute inset-0 flex items-center justify-center"

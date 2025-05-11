@@ -110,7 +110,7 @@ export function CyberText({
       style={baseStyles}
     >
       <div ref={contentRef} className="relative">
-        {children}
+      {children}
       </div>
       
       {/* Сканирующая линия (видна только при анимации) */}

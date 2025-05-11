@@ -6,6 +6,9 @@ import { VideoModal } from "./video-modal"
 import { CyberText } from "./cyber-text"
 import { ANIMATION_TIMINGS, CSS_VARIABLES } from "@/lib/constants/animation-timings"
 
+// Адаптер для обратной совместимости - переадресует импорты к новой реализации
+import { DynamicFrameLayout as CoreDynamicFrameLayout, Frame as CoreFrame } from '@/components/core/dynamic-frame-layout';
+
 interface Frame {
   id: number
   video: string
@@ -158,7 +161,7 @@ function FrameComponent({
             }}
           >
             <div
-              className="w-full h-full overflow-hidden relative bg-transparent"
+              className="w-full h-full overflow-hidden relative bg-black"
               style={{
                 transform: `scale(${mediaSize})`,
                 transformOrigin: "center",
@@ -166,14 +169,13 @@ function FrameComponent({
               }}
             >
               {videoError ? (
-                <div className="absolute inset-0 flex items-center justify-center text-white bg-black">
+                <div className="absolute inset-0 flex items-center justify-center text-white">
                   <p>Video not available</p>
                 </div>
               ) : (
                 <>
-                  <div className="absolute inset-0 bg-black/80"></div>
                   <video
-                    className="w-full h-full object-cover relative z-1"
+                    className="w-full h-full object-cover"
                     src={video}
                     poster={poster || defaultPoster}
                     loop
@@ -184,23 +186,19 @@ function FrameComponent({
                     onError={() => setVideoError(true)}
                   />
                   
-                  {/* Темный оверлей (отдельно от текста) */}
+                  {/* Темный оверлей с киберпанк текстом */}
                   <div 
-                    className="absolute inset-0 bg-gradient-to-br from-black/70 to-black/50 pointer-events-none z-10"
+                    className="absolute inset-0 bg-gradient-to-br from-black/90 to-black/70 pointer-events-none z-10 flex items-center justify-center"
                     style={{
-                      opacity: isHovered ? 0 : 0.3,
+                      opacity: isHovered ? 0 : 0.5,
                       transition: `opacity ${CSS_VARIABLES.HIDE_DURATION_CSS} cubic-bezier(0.16, 1, 0.3, 1)`,
                       backdropFilter: "blur(2px)",
-                      mixBlendMode: "multiply", // Allows the noise to show through
                     }}
-                  />
-                  
-                  {/* Отдельный слой для текста с более высоким z-index */}
-                  <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
+                  >
                     <CyberText
                       isHovered={isHovered}
                       isClicked={isClicked}
-                      className="text-white font-mono text-2xl tracking-wider opacity-50"
+                      className="text-white font-mono text-2xl tracking-wider opacity-75"
                       initialState={isDiscovered ? 'hidden' : 'visible'}
                       autoRevealDelay={7000}
                     >
@@ -217,43 +215,21 @@ function FrameComponent({
 
           {showFrame && (
             <div className="absolute inset-0" style={{ zIndex: 2 }}>
-              {/* Добавляем прозрачную область для видимости шума между элементами рамки */}
-              <div className="absolute inset-16 bg-transparent"></div>
-              
               <div
                 className="absolute top-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
-                style={{ 
-                  backgroundImage: `url(${corner})`,
-                  opacity: 1,
-                  mixBlendMode: 'screen'
-                }}
+                style={{ backgroundImage: `url(${corner})` }}
               />
               <div
                 className="absolute top-0 right-0 w-16 h-16 bg-contain bg-no-repeat"
-                style={{ 
-                  backgroundImage: `url(${corner})`, 
-                  transform: "scaleX(-1)",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
-                }}
+                style={{ backgroundImage: `url(${corner})`, transform: "scaleX(-1)" }}
               />
               <div
                 className="absolute bottom-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
-                style={{ 
-                  backgroundImage: `url(${corner})`, 
-                  transform: "scaleY(-1)",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
-                }}
+                style={{ backgroundImage: `url(${corner})`, transform: "scaleY(-1)" }}
               />
               <div
                 className="absolute bottom-0 right-0 w-16 h-16 bg-contain bg-no-repeat"
-                style={{ 
-                  backgroundImage: `url(${corner})`, 
-                  transform: "scale(-1, -1)",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
-                }}
+                style={{ backgroundImage: `url(${corner})`, transform: "scale(-1, -1)" }}
               />
 
               <div
@@ -262,8 +238,6 @@ function FrameComponent({
                   backgroundImage: `url(${edgeHorizontal})`,
                   backgroundSize: "auto 64px",
                   backgroundRepeat: "repeat-x",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
                 }}
               />
               <div
@@ -273,8 +247,6 @@ function FrameComponent({
                   backgroundSize: "auto 64px",
                   backgroundRepeat: "repeat-x",
                   transform: "rotate(180deg)",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
                 }}
               />
               <div
@@ -283,8 +255,6 @@ function FrameComponent({
                   backgroundImage: `url(${edgeVertical})`,
                   backgroundSize: "64px auto",
                   backgroundRepeat: "repeat-y",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
                 }}
               />
               <div
@@ -294,8 +264,6 @@ function FrameComponent({
                   backgroundSize: "64px auto",
                   backgroundRepeat: "repeat-y",
                   transform: "rotate(180deg)",
-                  opacity: 1,
-                  mixBlendMode: 'screen'
                 }}
               />
             </div>
@@ -305,9 +273,9 @@ function FrameComponent({
       
       {/* Модальное окно */}
       {isModalOpen && vkVideoSrc && (
-        <VideoModal 
+        <VideoModal
           videoSrc={vkVideoSrc}
-          onClose={() => setIsModalOpen(false)} 
+          onClose={() => setIsModalOpen(false)}
         />
       )}
     </>
@@ -395,56 +363,60 @@ export function DynamicFrameLayout({
     >
       <div 
         className="w-full h-full"
-      style={{
-        display: "grid",
-        gridTemplateRows: getRowSizes(),
-        gridTemplateColumns: getColSizes(),
-        gap: `${gapSize}px`,
+        style={{ 
+          display: "grid",
+          gridTemplateRows: getRowSizes(),
+          gridTemplateColumns: getColSizes(),
+          gap: `${gapSize}px`,
           position: "relative",
-        transition: "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
-      }}
+          transition: "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
+        }}
         onMouseLeave={handleMouseLeave}
-    >
+      >
         {/* Создаем сетку на основе данных */}
         {gridData.map(({ row, col, frame }) => {
           const transformOrigin = getTransformOrigin(frame.defaultPos.x, frame.defaultPos.y);
-        const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
-
-        return (
+          const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
+          
+          return (
             <div 
-            key={frame.id}
-            style={{
+              key={frame.id}
+              style={{ 
                 gridRow: row + 1,
                 gridColumn: col + 1,
-              transformOrigin,
-              transition: "transform 0.4s ease",
-            }}
-            onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
-          >
-            <FrameComponent
-              video={frame.video}
+                transformOrigin,
+                transition: "transform 0.4s ease",
+              }}
+              onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
+            >
+              <FrameComponent
+                video={frame.video}
                 poster={frame.poster}
-              width="100%"
-              height="100%"
-              corner={frame.corner}
-              edgeHorizontal={frame.edgeHorizontal}
-              edgeVertical={frame.edgeVertical}
-              mediaSize={frame.mediaSize}
-              borderThickness={frame.borderThickness}
-              borderSize={frame.borderSize}
-              showFrame={showFrames}
+                width="100%"
+                height="100%"
+                corner={frame.corner}
+                edgeHorizontal={frame.edgeHorizontal}
+                edgeVertical={frame.edgeVertical}
+                mediaSize={frame.mediaSize}
+                borderThickness={frame.borderThickness}
+                borderSize={frame.borderSize}
+                showFrame={showFrames}
                 isHovered={frame.isHovered}
-              frameId={frame.id}
-              activeFrameId={activeFrameId}
-              startTime={frame.startTime}
-              title={frame.title}
+                frameId={frame.id}
+                activeFrameId={activeFrameId}
+                startTime={frame.startTime}
+                title={frame.title}
                 isDiscovered={!!discoveredState[frame.id]}
-              vkVideoSrc={frame.vkVideoSrc}
-            />
+                vkVideoSrc={frame.vkVideoSrc}
+              />
             </div>
           );
-      })}
-    </div>
+        })}
+      </div>
     </motion.div>
   );
 }
+
+// Реэкспортируем новый компонент под старым именем
+export const DynamicFrameLayout = CoreDynamicFrameLayout;
+export type Frame = CoreFrame;

@@ -121,7 +121,7 @@ export function useCyberReveal(
           setState('revealing');
         }, hoverOutDelay);
       } else {
-        setState('revealing');
+      setState('revealing');
       }
     }
   }, [isHovered, state, hoverOutDelay, createTimer, clearAllTimers]);

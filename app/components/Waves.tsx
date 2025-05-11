@@ -146,8 +146,8 @@ export function Waves({
   waveSpeedY = 0.005,
   waveAmpX = 32,
   waveAmpY = 16,
-  xGap = 10,
-  yGap = 32,
+  xGap = 20,
+  yGap = 30,
   friction = 0.925,
   tension = 0.005,
   maxCursorMove = 100,
@@ -181,6 +181,24 @@ export function Waves({
     [0, 100 * parallaxFactor]
   )
 
+  const waveSpeedFactor = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.4],
+    [1, 0.5, 0.1]
+  )
+  
+  const waveOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.4],
+    [1, 0.6, 0]
+  )
+  
+  const waveAmplitudeFactor = useTransform(
+    scrollYProgress,
+    [0, 0.3],
+    [1, 0.3]
+  )
+
   useEffect(() => {
     const canvas = canvasRef.current
     const container = containerRef.current
@@ -199,12 +217,12 @@ export function Waves({
     function setLines() {
       const { width, height } = boundingRef.current
       linesRef.current = []
-      const oWidth = width + 200,
-        oHeight = height + 30
+      const oWidth = width + 100,
+        oHeight = height + 100
       const totalLines = Math.ceil(oWidth / xGap)
       const totalPoints = Math.ceil(oHeight / yGap)
       const xStart = (width - xGap * totalLines) / 2
-      const yStart = (height - yGap * totalPoints) / 2
+      const yStart = -50
       for (let i = 0; i <= totalLines; i++) {
         const pts: Point[] = []
         for (let j = 0; j <= totalPoints; j++) {
@@ -219,19 +237,46 @@ export function Waves({
       }
     }
 
+    let currentSpeedFactor = 1;
+    let currentAmplitudeFactor = 1;
+    let currentOpacity = 1;
+    
+    const unsubscribeSpeed = waveSpeedFactor.onChange(v => {
+      currentSpeedFactor = v;
+    });
+    
+    const unsubscribeAmplitude = waveAmplitudeFactor.onChange(v => {
+      currentAmplitudeFactor = v;
+    });
+    
+    const unsubscribeOpacity = waveOpacity.onChange(v => {
+      currentOpacity = v;
+      
+      if (canvas) {
+        canvas.style.opacity = String(v);
+      }
+    });
+
     function movePoints(time: number) {
       const lines = linesRef.current
       const mouse = mouseRef.current
       const noise = noiseRef.current
+      
+      const adjustedWaveSpeedX = waveSpeedX * currentSpeedFactor;
+      const adjustedWaveSpeedY = waveSpeedY * currentSpeedFactor;
+      const adjustedWaveAmpX = waveAmpX * currentAmplitudeFactor;
+      const adjustedWaveAmpY = waveAmpY * currentAmplitudeFactor;
+      
       lines.forEach((pts) => {
         pts.forEach((p) => {
           const move =
             noise.perlin2(
-              (p.x + time * waveSpeedX) * 0.002,
-              (p.y + time * waveSpeedY) * 0.0015,
+              (p.x + time * adjustedWaveSpeedX) * 0.002,
+              (p.y + time * adjustedWaveSpeedY) * 0.0015,
             ) * 12
-          p.wave.x = Math.cos(move) * waveAmpX
-          p.wave.y = Math.sin(move) * waveAmpY
+          
+          p.wave.x = Math.cos(move) * adjustedWaveAmpX
+          p.wave.y = Math.sin(move) * adjustedWaveAmpY
 
           const dx = p.x - mouse.sx,
             dy = p.y - mouse.sy
@@ -244,12 +289,14 @@ export function Waves({
             p.cursor.vy += Math.sin(mouse.a) * f * l * mouse.vs * 0.00065
           }
 
+          const scrollDampingFactor = Math.max(0.1, 1 - (1 - currentSpeedFactor) * 0.5);
+          
           p.cursor.vx += (0 - p.cursor.x) * tension
           p.cursor.vy += (0 - p.cursor.y) * tension
-          p.cursor.vx *= friction
-          p.cursor.vy *= friction
-          p.cursor.x += p.cursor.vx * 2
-          p.cursor.y += p.cursor.vy * 2
+          p.cursor.vx *= friction * scrollDampingFactor
+          p.cursor.vy *= friction * scrollDampingFactor
+          p.cursor.x += p.cursor.vx * 2 * scrollDampingFactor
+          p.cursor.y += p.cursor.vy * 2 * scrollDampingFactor
 
           p.cursor.x = Math.min(
             maxCursorMove,
@@ -276,7 +323,13 @@ export function Waves({
       
       ctx.clearRect(0, 0, width, height)
       ctx.beginPath()
-      ctx.strokeStyle = lineColor
+      
+      const color = lineColor.startsWith('rgba') 
+        ? lineColor 
+        : `rgba(255, 255, 255, ${currentOpacity * 0.5})`;
+      
+      ctx.strokeStyle = color
+      
       linesRef.current.forEach((points) => {
         let p1 = moved(points[0], false)
         ctx.moveTo(p1.x, p1.y)
@@ -356,6 +409,10 @@ export function Waves({
       window.removeEventListener("resize", onResize)
       window.removeEventListener("mousemove", onMouseMove)
       window.removeEventListener("touchmove", onTouchMove)
+      
+      unsubscribeSpeed();
+      unsubscribeAmplitude();
+      unsubscribeOpacity();
     }
   }, [
     lineColor,
@@ -376,19 +433,22 @@ export function Waves({
       ref={containerRef}
       style={{
         backgroundColor,
-        y: reactToScroll ? scrollParallax : 0
+        y: reactToScroll ? scrollParallax : 0,
+        marginTop: "-1px"
       }}
       className={cn(
-        "absolute top-0 left-0 w-full h-full overflow-hidden",
+        "absolute inset-0 w-full h-full overflow-hidden",
         className,
       )}
     >
+      <div className="absolute inset-0 z-0">
       <NoiseEffect 
-        patternAlpha={5} 
-        patternRefreshInterval={8} 
+        patternAlpha={15} 
+        patternRefreshInterval={4} 
         patternScaleX={1.2} 
         patternScaleY={1.2} 
       />
+      </div>
       
       <div
         className={cn(
@@ -401,7 +461,7 @@ export function Waves({
           willChange: "transform",
         }}
       />
-      <canvas ref={canvasRef} className="block w-full h-full" />
+      <canvas ref={canvasRef} className="block w-full h-full" style={{ transition: "opacity 0.5s ease-out" }} />
     </motion.div>
   )
 }

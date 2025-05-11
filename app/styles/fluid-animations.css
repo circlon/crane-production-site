@@ -343,6 +343,15 @@ body {
   will-change: clip-path, opacity, transform;
 }
 
+/* Переопределение непрозрачности для opacity-50, сохраняя её даже при анимации */
+.opacity-50.cyber-text-reveal,
+.opacity-50.cyber-text-hide,
+.opacity-50[data-cyber-state="revealing"],
+.opacity-50[data-cyber-state="visible"],
+.opacity-50[data-cyber-state="hiding"] {
+  opacity: 0.5 !important;
+}
+
 /* Анимация для сканирующей линии */
 .cyber-text-reveal .cyber-scan-line {
   animation: scanLineReveal var(--cyber-reveal-duration) forwards;
