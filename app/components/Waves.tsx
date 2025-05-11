@@ -322,17 +322,39 @@ export function Waves({
       if (!ctx) return
       
       ctx.clearRect(0, 0, width, height)
-      ctx.beginPath()
       
-      const color = lineColor.startsWith('rgba') 
+      // Центр канваса для радиального градиента
+      const centerX = width / 2
+      const centerY = height / 2
+      
+      // Максимальное расстояние от центра до угла
+      const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY)
+      
+      // Радиус градиента (90% от максимального расстояния для более широкой области видимости)
+      const gradientRadius = maxDistance * 0.9
+      
+      // Функция для вычисления прозрачности на основе расстояния от центра
+      const getOpacityFactor = (x: number, y: number) => {
+        const distFromCenter = Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY))
+        
+        // Полная непрозрачность в центре, плавный переход к краям
+        if (distFromCenter < gradientRadius * 0.7) {
+          return 1
+        } else {
+          // Плавное уменьшение прозрачности к краям (easeOutExpo для более естественного затухания)
+          const t = 1 - Math.min(1, (distFromCenter - gradientRadius * 0.7) / (maxDistance - gradientRadius * 0.7))
+          return t === 0 ? 0 : 1 - Math.pow(2, -10 * t); // easeOutExpo
+        }
+      }
+      
+      const baseColor = lineColor.startsWith('rgba') 
         ? lineColor 
         : `rgba(255, 255, 255, ${currentOpacity * 0.5})`;
       
-      ctx.strokeStyle = color
-      
+      // Обработка каждой линии с применением фактора прозрачности
       linesRef.current.forEach((points) => {
         let p1 = moved(points[0], false)
-        ctx.moveTo(p1.x, p1.y)
+        
         points.forEach((p, idx) => {
           const isLast = idx === points.length - 1
           p1 = moved(p, !isLast)
@@ -340,11 +362,41 @@ export function Waves({
             points[idx + 1] || points[points.length - 1],
             !isLast,
           )
-          ctx.lineTo(p1.x, p1.y)
-          if (isLast) ctx.moveTo(p2.x, p2.y)
+          
+          // Получаем фактор прозрачности для текущей точки
+          const opacityFactor = getOpacityFactor(p1.x, p1.y)
+          
+          // Рисуем сегмент линии с учетом прозрачности
+          if (!isLast) {
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y)
+            ctx.lineTo(p2.x, p2.y)
+            
+            // Устанавливаем цвет с прозрачностью для этого сегмента
+            const [r, g, b, a] = parseRGBA(baseColor)
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * opacityFactor})`
+            
+            ctx.stroke()
+          }
         })
       })
-      ctx.stroke()
+    }
+    
+    // Вспомогательная функция для разбора цветовой строки в RGBA
+    function parseRGBA(colorStr: string): [number, number, number, number] {
+      // Для RGBA строк
+      const rgbaMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/)
+      if (rgbaMatch) {
+        return [
+          parseInt(rgbaMatch[1]),
+          parseInt(rgbaMatch[2]),
+          parseInt(rgbaMatch[3]),
+          rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 1
+        ]
+      }
+      
+      // Для строк HSL или нераспознанных строк - используем белый цвет с подходящей прозрачностью
+      return [255, 255, 255, currentOpacity * 0.5]
     }
 
     function tick(t: number) {
