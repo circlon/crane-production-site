@@ -437,13 +437,14 @@ export function Waves({
         backgroundColor,
         y: reactToScroll ? scrollParallax : 0,
         marginTop: 0,
+        marginBottom: "-2px",
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: '100vh'
+        height: 'calc(100vh + 5px)',
       }}
       className={cn(
         "overflow-hidden",
@@ -473,8 +474,8 @@ export function Waves({
       
       {/* Используем обертку для создания эффекта сглаживания на краях */}
       <div className="absolute inset-0 w-full h-full" style={{
-        mask: 'radial-gradient(circle at center, black 60%, transparent 95%)',
-        WebkitMask: 'radial-gradient(circle at center, black 60%, transparent 95%)',
+        mask: 'radial-gradient(ellipse at center, black 55%, transparent 95%)',
+        WebkitMask: 'radial-gradient(ellipse at center, black 55%, transparent 95%)',
         position: 'relative',
       }}>
         <canvas ref={canvasRef} className="block w-full h-full" style={{ transition: "opacity 0.5s ease-out" }} />
