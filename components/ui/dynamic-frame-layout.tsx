@@ -326,8 +326,7 @@ export function DynamicFrameLayout({
       // Проверяем не только по размеру экрана, но и по наличию тач-ивентов
       const hasTouchScreen = (
         ('ontouchstart' in window) || 
-        (navigator.maxTouchPoints > 0) || 
-        (navigator.msMaxTouchPoints > 0)
+        (navigator.maxTouchPoints > 0)
       );
       const isSmallScreen = window.innerWidth < 768;
       
@@ -447,6 +446,10 @@ export function DynamicFrameLayout({
                   ? (colSize === 1 ? 1 : (frame.id % colSize === 0 ? colSize : frame.id % colSize))
                   : col + 1,
                 transformOrigin: getTransformOrigin(col, row),
+                // Добавляем увеличение при наведении
+                transform: hoveredFrame === frame.id ? `scale(${hoverSize/4})` : 'scale(1)',
+                zIndex: hoveredFrame === frame.id ? 10 : 1,
+                transition: 'all 0.3s ease-in-out',
                 // Адаптивный размер ячейки
                 width: "100%",
                 height: isMobile ? "33vh" : "100%",
