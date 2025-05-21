@@ -43,6 +43,7 @@ interface FrameComponentProps {
   isDiscovered: boolean
   vkVideoSrc?: string
   poster?: string
+  onVideoClick?: (videoId: number) => void
 }
 
 function FrameComponent({
@@ -65,6 +66,7 @@ function FrameComponent({
   isDiscovered,
   vkVideoSrc,
   poster,
+  onVideoClick,
 }: FrameComponentProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoError, setVideoError] = useState(false)
@@ -115,8 +117,13 @@ function FrameComponent({
     setIsClicked(true); // Запускаем анимацию закрытия
     
     if (vkVideoSrc) {
-      // Открываем модальное окно для VK видео
-      setIsModalOpen(true);
+      // Вызываем внешнюю функцию обработки клика, если она есть
+      if (onVideoClick) {
+        onVideoClick(frameId);
+      } else {
+        // Если внешний обработчик не предоставлен, используем встроенное модальное окно
+        setIsModalOpen(true);
+      }
     }
     
     // Сбрасываем клик, чтобы при следующем наведении можно было снова запустить анимацию
@@ -200,13 +207,15 @@ function FrameComponent({
                     <CyberText
                       isHovered={isHovered}
                       isClicked={isClicked}
-                      className="text-white font-mono text-2xl tracking-wider opacity-50"
+                      className="text-white font-display tracking-wider opacity-80"
                       initialState={isDiscovered ? 'hidden' : 'visible'}
                       autoRevealDelay={7000}
                     >
-                      <div className="px-4 py-2 relative text-center">
-                        <span>{title ? title : `Frame ${frameId}`}</span>
-                        <div className="absolute bottom-0 left-0 right-0 h-px bg-white opacity-30" />
+                      <div className="px-6 py-3 relative text-center">
+                        <span className="text-2xl md:text-3xl uppercase font-display font-bold tracking-wider">
+                          {title ? title : `Frame ${frameId}`}
+                        </span>
+                        <div className="absolute bottom-0 left-1/4 right-1/4 h-[1px] bg-white opacity-60" />
                       </div>
                     </CyberText>
                   </div>
@@ -324,6 +333,7 @@ interface DynamicFrameLayoutProps {
   showFrames?: boolean
   hoverSize?: number
   gapSize?: number
+  onVideoClick?: (videoId: number) => void
 }
 
 export function DynamicFrameLayout({ 
@@ -331,7 +341,8 @@ export function DynamicFrameLayout({
   className,
   showFrames = false,
   hoverSize = 6,
-  gapSize = 4
+  gapSize = 4,
+  onVideoClick
 }: DynamicFrameLayoutProps) {
   const [frames, setFrames] = useState(initialFrames)
   const [hovered, setHovered] = useState<{ row: number; col: number } | null>(null)
@@ -339,22 +350,22 @@ export function DynamicFrameLayout({
   const [discoveredState, setDiscoveredState] = useState<DiscoveredState>({})
 
   const getRowSizes = () => {
-    if (hovered === null) return "4fr 4fr 4fr"
+    if (hovered === null) return "1fr 1fr 1fr"
     const { row } = hovered
-    const nonHoveredSize = (12 - hoverSize) / 2
-    return [0, 1, 2].map((r) => (r === row ? `${hoverSize}fr` : `${nonHoveredSize}fr`)).join(" ")
+    // Уменьшаем эффект расширения с 4fr до 2.2fr для более сдержанного эффекта
+    return [0, 1, 2].map((r) => (r === row ? `2.2fr` : `1fr`)).join(" ")
   }
 
   const getColSizes = () => {
-    if (hovered === null) return "4fr 4fr 4fr"
+    if (hovered === null) return "1fr 1fr"
     const { col } = hovered
-    const nonHoveredSize = (12 - hoverSize) / 2
-    return [0, 1, 2].map((c) => (c === col ? `${hoverSize}fr` : `${nonHoveredSize}fr`)).join(" ")
+    // Уменьшаем эффект расширения с 4fr до 2.2fr для более сдержанного эффекта
+    return [0, 1].map((c) => (c === col ? `2.2fr` : `1fr`)).join(" ")
   }
 
   const getTransformOrigin = (x: number, y: number) => {
     const vertical = y === 0 ? "top" : y === 4 ? "center" : "bottom"
-    const horizontal = x === 0 ? "left" : x === 4 ? "center" : "right"
+    const horizontal = x === 0 ? "left" : "right"
     return `${vertical} ${horizontal}`
   }
 
@@ -370,19 +381,22 @@ export function DynamicFrameLayout({
   }
   
   const handleMouseLeave = () => {
-    setHovered(null);
-    setActiveFrameId(null);
-    
-    setFrames(frames.map(frame => ({
-      ...frame,
-      isHovered: false
-    })));
+    // Add a slight delay before resetting the grid to improve the transition effect
+    setTimeout(() => {
+      setHovered(null);
+      setActiveFrameId(null);
+      
+      setFrames(frames.map(frame => ({
+        ...frame,
+        isHovered: false
+      })));
+    }, 250);
   }
 
   // Создаем "сетку" с учетом позиций фреймов из данных
   const gridData = frames.map(frame => ({
     row: Math.floor(frame.defaultPos.y / 4),
-    col: Math.floor(frame.defaultPos.x / 4),
+    col: Math.floor(frame.defaultPos.x / 6), // Changed from 4 to 6 to match new column width
     frame
   }));
 
@@ -395,56 +409,62 @@ export function DynamicFrameLayout({
     >
       <div 
         className="w-full h-full"
-      style={{
-        display: "grid",
-        gridTemplateRows: getRowSizes(),
-        gridTemplateColumns: getColSizes(),
-        gap: `${gapSize}px`,
+        style={{
+          display: "grid",
+          gridTemplateRows: getRowSizes(),
+          gridTemplateColumns: getColSizes(),
+          gap: `${gapSize}px`,
           position: "relative",
-        transition: "grid-template-rows 0.4s ease, grid-template-columns 0.4s ease",
-      }}
+          // Увеличиваем продолжительность анимации для более плавного эффекта
+          transition: "grid-template-rows 0.8s cubic-bezier(0.16, 1, 0.3, 1), grid-template-columns 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
         onMouseLeave={handleMouseLeave}
-    >
+      >
         {/* Создаем сетку на основе данных */}
         {gridData.map(({ row, col, frame }) => {
           const transformOrigin = getTransformOrigin(frame.defaultPos.x, frame.defaultPos.y);
-        const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
+          const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
 
-        return (
+          return (
             <div 
-            key={frame.id}
-            style={{
+              key={frame.id}
+              style={{
                 gridRow: row + 1,
                 gridColumn: col + 1,
-              transformOrigin,
-              transition: "transform 0.4s ease",
-            }}
-            onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
-          >
-            <FrameComponent
-              video={frame.video}
+                transformOrigin,
+                transition: "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+                transform: isCurrentFrameHovered ? 'scale(1.01)' : 'scale(1)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                boxShadow: isCurrentFrameHovered ? '0 8px 24px rgba(0, 0, 0, 0.4)' : 'none',
+              }}
+              onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
+            >
+              <FrameComponent
+                video={frame.video}
                 poster={frame.poster}
-              width="100%"
-              height="100%"
-              corner={frame.corner}
-              edgeHorizontal={frame.edgeHorizontal}
-              edgeVertical={frame.edgeVertical}
-              mediaSize={frame.mediaSize}
-              borderThickness={frame.borderThickness}
-              borderSize={frame.borderSize}
-              showFrame={showFrames}
+                width="100%"
+                height="100%"
+                corner={frame.corner}
+                edgeHorizontal={frame.edgeHorizontal}
+                edgeVertical={frame.edgeVertical}
+                mediaSize={frame.mediaSize}
+                borderThickness={frame.borderThickness}
+                borderSize={frame.borderSize}
+                showFrame={showFrames}
                 isHovered={frame.isHovered}
-              frameId={frame.id}
-              activeFrameId={activeFrameId}
-              startTime={frame.startTime}
-              title={frame.title}
+                frameId={frame.id}
+                activeFrameId={activeFrameId}
+                startTime={frame.startTime}
+                title={frame.title}
                 isDiscovered={!!discoveredState[frame.id]}
-              vkVideoSrc={frame.vkVideoSrc}
-            />
+                vkVideoSrc={frame.vkVideoSrc}
+                onVideoClick={onVideoClick}
+              />
             </div>
           );
-      })}
-    </div>
+        })}
+      </div>
     </motion.div>
   );
 }

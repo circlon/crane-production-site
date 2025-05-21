@@ -1,19 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Waves } from './components/Waves';
 import { DynamicFrameLayout } from '../components/ui/dynamic-frame-layout';
 import ScrollExpandMedia from './components/ScrollExpandMedia';
 import FluidTitle from './components/FluidTitle';
 import ScrollIndicator from './components/ScrollIndicator';
 import { NoiseEffect } from './components/Noise';
+import VideoModal from './components/VideoModal';
 import './styles/fluid-animations.css';
 
 const frameData = [
   {
     id: 1,
     video: '/videos/Raf New 1.mp4',
-    defaultPos: { x: 0, y: 0, w: 4, h: 4 },
+    defaultPos: { x: 0, y: 0, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
     edgeVertical: '/images/frames/edge-v.png',
@@ -23,12 +24,12 @@ const frameData = [
     isHovered: false,
     startTime: 0,
     title: 'Fitness Cinematic',
-    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1'
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=0'
   },
   {
     id: 2,
     video: '/videos/video2.mp4',
-    defaultPos: { x: 4, y: 0, w: 4, h: 4 },
+    defaultPos: { x: 6, y: 0, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
     edgeVertical: '/images/frames/edge-v.png',
@@ -36,12 +37,14 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 5
+    startTime: 5,
+    title: 'Fashion',
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=1'
   },
   {
     id: 3,
     video: '/videos/video3.mp4',
-    defaultPos: { x: 8, y: 0, w: 4, h: 4 },
+    defaultPos: { x: 0, y: 4, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
     edgeVertical: '/images/frames/edge-v.png',
@@ -49,12 +52,14 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 8
+    startTime: 8,
+    title: 'Личный бренд',
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=2'
   },
   {
     id: 4,
     video: '/videos/video4.mp4',
-    defaultPos: { x: 0, y: 4, w: 4, h: 4 },
+    defaultPos: { x: 6, y: 4, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
     edgeVertical: '/images/frames/edge-v.png',
@@ -62,12 +67,14 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 12
+    startTime: 12,
+    title: 'Презентация компаний',
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=3'
   },
   {
     id: 5,
     video: '/videos/video5.mp4',
-    defaultPos: { x: 4, y: 4, w: 4, h: 4 },
+    defaultPos: { x: 0, y: 8, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
     edgeVertical: '/images/frames/edge-v.png',
@@ -75,12 +82,14 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 15
+    startTime: 15,
+    title: 'Подкасты/интервью',
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=4'
   },
   {
     id: 6,
     video: '/videos/video6.mp4',
-    defaultPos: { x: 8, y: 4, w: 4, h: 4 },
+    defaultPos: { x: 6, y: 8, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
     edgeVertical: '/images/frames/edge-v.png',
@@ -88,66 +97,121 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 3
-  },
-  {
-    id: 7,
-    video: '/videos/video7.mp4',
-    defaultPos: { x: 0, y: 8, w: 4, h: 4 },
-    corner: '/images/frames/corner.png',
-    edgeHorizontal: '/images/frames/edge-h.png',
-    edgeVertical: '/images/frames/edge-v.png',
-    mediaSize: 1,
-    borderThickness: 16,
-    borderSize: 100,
-    isHovered: false,
-    startTime: 7
-  },
-  {
-    id: 8,
-    video: '/videos/video8.mp4',
-    defaultPos: { x: 4, y: 8, w: 4, h: 4 },
-    corner: '/images/frames/corner.png',
-    edgeHorizontal: '/images/frames/edge-h.png',
-    edgeVertical: '/images/frames/edge-v.png',
-    mediaSize: 1,
-    borderThickness: 16,
-    borderSize: 100,
-    isHovered: false,
-    startTime: 10
-  },
-  {
-    id: 9,
-    video: '/videos/video9.mp4',
-    defaultPos: { x: 8, y: 8, w: 4, h: 4 },
-    corner: '/images/frames/corner.png',
-    edgeHorizontal: '/images/frames/edge-h.png',
-    edgeVertical: '/images/frames/edge-v.png',
-    mediaSize: 1,
-    borderThickness: 16,
-    borderSize: 100,
-    isHovered: false,
-    startTime: 4
+    startTime: 3,
+    title: 'Креативные Reels',
+    vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=5'
   }
 ];
 
 export default function Home() {
+  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  
+  // Find the active video from frameData
+  const activeVideo = activeVideoId !== null 
+    ? frameData.find(frame => frame.id === activeVideoId) 
+    : null;
+
+  // Handle video click events
+  const handleVideoClick = (videoId: number) => {
+    setActiveVideoId(videoId);
+    setShowModal(true);
+  };
+
+  // Close the modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    // Smooth scroll function
+    const handleNavClick = (e: React.MouseEvent | Event) => {
+      if (!e.target) return;
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      if (!link) return;
+      
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+        const targetId = href.substring(1);
+        const targetElement = document.getElementById(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      }
+    };
+
+    // Add click event listener to navigation
+    const navElement = document.querySelector('nav');
+    if (navElement) {
+      navElement.addEventListener('click', handleNavClick);
+    }
+
+    // Cleanup listener on component unmount
+    return () => {
+      if (navElement) {
+        navElement.removeEventListener('click', handleNavClick);
+      }
+    };
+  }, []);
 
   return (
     <main className="relative bg-transparent overflow-x-hidden w-screen m-0 p-0">
       {/* Основное содержимое начинается здесь */}      
       {/* Hero section с волнами */}
-      <section id="hero-section" className="relative h-screen w-screen overflow-hidden m-0 p-0 pb-1" style={{ top: 0 }}>
+      <section id="hero-section" className="relative h-screen w-screen overflow-hidden" style={{ padding: 0, margin: 0 }}>
+        {/* Навигационное меню */}
+        <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="text-white text-xl font-heading">CRANE</div>
+            
+            <div className="flex items-center space-x-10">
+              {/* Навигационные ссылки */}
+              <a href="#video-grid-section" className="text-white opacity-80 hover:opacity-100 transition-opacity font-sans">
+                Направления
+              </a>
+              <a href="#contacts-section" className="text-white opacity-80 hover:opacity-100 transition-opacity font-sans">
+                Контакты
+              </a>
+              
+              {/* Социальные сети */}
+              <div className="flex space-x-4">
+                <a href="https://vkvideo.ru/@club229245500/playlists" target="_blank" rel="noopener noreferrer" className="group">
+                  <div className="w-10 h-10 rounded-full bg-zinc-900/70 backdrop-blur-sm flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800/50">
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12.145 15.84C7.77 15.84 5.29 12.86 5.17 7.95H7.29C7.37 11.62 8.97 13.23 10.24 13.53V7.95H12.23V11.2C13.49 11.06 14.8 9.56 15.25 7.95H17.24C16.9 9.98 15.47 11.48 14.45 12.08C15.47 12.57 17.09 13.89 17.74 15.84H15.53C15.01 14.49 13.81 13.26 12.23 13.09V15.84H12.145Z" fill="currentColor"/>
+                    </svg>
+                  </div>
+                </a>
+                
+                <a href="https://t.me/crane_film" target="_blank" rel="noopener noreferrer" className="group">
+                  <div className="w-10 h-10 rounded-full bg-zinc-900/70 backdrop-blur-sm flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800/50">
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18.92 6.01L4.77 11.35C4.23 11.55 4.24 11.84 4.67 11.96L8.18 13.06L16.5 7.94C16.76 7.78 16.99 7.87 16.81 8.04L10.07 14.08H10.06L10.07 14.09L9.92 17.7C10.16 17.7 10.27 17.59 10.41 17.45L12.12 15.79L15.67 18.42C16.11 18.67 16.43 18.54 16.54 18.02L18.94 6.79C19.09 6.16 18.69 5.86 18.92 6.01Z" fill="currentColor"/>
+                    </svg>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </nav>
+        
+        {/* Waves теперь fixed и находится вне потока документа */}
         <Waves lineColor="rgba(255, 255, 255, 0.5)" className="absolute inset-0" />
         <div className="h-screen flex flex-col items-center justify-center text-white relative z-10">
           <div className="max-w-6xl mx-auto text-center px-4">
             <FluidTitle 
               text="CRANE PRODUCTION" 
               color="white"
-              className="mb-6 scale-125 transform origin-center"
+              className="mb-6 scale-125 transform origin-center font-heading"
               delay={0.5}
             />
-            <p className="text-xl md:text-2xl mt-4 text-gray-400 opacity-70">
+            <p className="text-xl md:text-2xl mt-4 text-gray-400 opacity-70 font-sans">
               Frame Moments, Build Brands
             </p>
           </div>
@@ -164,32 +228,96 @@ export default function Home() {
         mediaType="video"
         mediaSrc="/videos/Raf New 1.mp4"
         bgImageSrc=""
-        title="Fitness Cinematic Experience"
+        title="О НАС"
         textBlend={true}
         id="scroll-expand-section"
       >
         <div className="text-white max-w-2xl mx-auto">
-          <h3 className="text-2xl font-semibold mb-4">The Vision Behind Fitness Cinematic</h3>
-          <p className="mb-6">
-            A unique blend of artistic visuals and dynamic movement, captured frame by frame
-            to showcase the beauty of fitness in motion.
+          <h3 className="text-4xl md:text-5xl font-bold mb-8 font-heading uppercase tracking-wider">О НАС</h3>
+          <p className="mb-6 text-lg font-sans">
+            Мы креативный продакшен, который понимает, как важно любому бизнесу и эксперту продвижение в медийной сфере. 
+            Мы умеем создавать крутые видео, которые зацепят вашего зрителя и потенциального клиента.
           </p>
-          <p>
-            This project highlights the intersection of athleticism and cinematography,
-            creating an immersive experience that inspires and motivates.
+          <p className="text-lg font-sans">
+            Мы изучаем ваш бизнес и экспертность, чтобы создать лучшие условия видеопроизводства. 
+            Наш подход - рушить привычные шаблоны съемки и монтажа и научиться выделяться среди огромной массы видео.
           </p>
         </div>
       </ScrollExpandMedia>
 
       {/* Video Frame Grid section */}
-      <section className="flex items-center justify-center bg-transparent h-screen">
-        <div className="w-full h-full px-4 py-4">
+      <section id="video-grid-section" className="flex flex-col items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm min-h-screen py-16 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40 z-0"></div>
+        <h2 className="text-3xl md:text-5xl font-bold text-white mb-12 text-center relative z-10 uppercase font-heading tracking-wider">
+          Наши направления
+        </h2>
+        <div className="w-full max-w-[94%] lg:max-w-[90%] mx-auto h-[85vh] px-4 relative z-10">
           <DynamicFrameLayout 
             frames={frameData} 
             showFrames={false}
             hoverSize={6}
-            gapSize={4}
+            gapSize={16}
+            onVideoClick={handleVideoClick}
           />
+        </div>
+      </section>
+
+      {/* Video Modal */}
+      {activeVideo && (
+        <VideoModal 
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          videoSrc={activeVideo.vkVideoSrc || `https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1`}
+        />
+      )}
+
+      {/* Подход */}
+      <section className="py-20 bg-gradient-to-b from-black/80 to-black/70 relative">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-12 text-center font-display uppercase tracking-wide">
+            Наш подход
+          </h2>
+          
+          <div className="text-gray-200 space-y-6 font-sans">
+            <p className="text-lg md:text-xl leading-relaxed">
+              Мы способны создавать профессиональные видео силами небольшой команды, которое «продает» при этом оставляя комфортную стоимость для Вас, но при необходимости, всегда можем привлечь крутых специалистов в области монтажа, звукорежиссуры, графики.
+            </p>
+            
+            <p className="text-lg md:text-xl leading-relaxed">
+              Видео - это и про творчество, поэтому мы создаем классную и дружественную атмосферу на съемках, потому что хотим кайфовать от процесса и результата.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Контакты */}
+      <section id="contacts-section" className="py-20 bg-gradient-to-b from-black/70 to-black/90 relative">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 font-heading uppercase tracking-wider">
+            Свяжитесь с нами
+          </h2>
+          
+          <p className="text-xl text-gray-200 mb-12 font-sans">
+            Для того, чтобы заказать услугу - свяжитесь с нами:
+          </p>
+          
+          <div className="flex justify-center space-x-10">
+            <a href="https://vkvideo.ru/@club229245500/playlists" target="_blank" rel="noopener noreferrer" className="group">
+              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800">
+                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.145 15.84C7.77 15.84 5.29 12.86 5.17 7.95H7.29C7.37 11.62 8.97 13.23 10.24 13.53V7.95H12.23V11.2C13.49 11.06 14.8 9.56 15.25 7.95H17.24C16.9 9.98 15.47 11.48 14.45 12.08C15.47 12.57 17.09 13.89 17.74 15.84H15.53C15.01 14.49 13.81 13.26 12.23 13.09V15.84H12.145Z" fill="currentColor"/>
+                </svg>
+              </div>
+            </a>
+            
+            <a href="https://t.me/crane_film" target="_blank" rel="noopener noreferrer" className="group">
+              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800">
+                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18.92 6.01L4.77 11.35C4.23 11.55 4.24 11.84 4.67 11.96L8.18 13.06L16.5 7.94C16.76 7.78 16.99 7.87 16.81 8.04L10.07 14.08H10.06L10.07 14.09L9.92 17.7C10.16 17.7 10.27 17.59 10.41 17.45L12.12 15.79L15.67 18.42C16.11 18.67 16.43 18.54 16.54 18.02L18.94 6.79C19.09 6.16 18.69 5.86 18.92 6.01Z" fill="currentColor"/>
+                </svg>
+              </div>
+            </a>
+          </div>
         </div>
       </section>
     </main>

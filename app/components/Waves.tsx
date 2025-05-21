@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { useScroll, motion, useTransform } from "framer-motion"
 import { NoiseEffect } from './Noise';
@@ -173,6 +173,8 @@ export function Waves({
     a: 0,
     set: false,
   })
+  
+  const [isInitialized, setIsInitialized] = useState(false)
   
   const { scrollYProgress } = useScroll()
   const scrollParallax = useTransform(
@@ -407,6 +409,10 @@ export function Waves({
     window.addEventListener("mousemove", onMouseMove)
     window.addEventListener("touchmove", onTouchMove, { passive: true })
 
+    setTimeout(() => {
+      setIsInitialized(true)
+    }, 100)
+
     return () => {
       window.removeEventListener("resize", onResize)
       window.removeEventListener("mousemove", onMouseMove)
@@ -436,15 +442,18 @@ export function Waves({
       style={{
         backgroundColor,
         y: reactToScroll ? scrollParallax : 0,
-        marginTop: "-5px",
-        marginBottom: "-2px",
-        position: 'absolute',
+        marginTop: 0,
+        marginBottom: 0,
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: 'calc(100vh + 10px)',
+        height: '100vh',
+        zIndex: 0,
+        opacity: isInitialized ? 1 : 0,
+        transition: 'opacity 0.3s ease-in',
       }}
       className={cn(
         "overflow-hidden",
@@ -476,7 +485,6 @@ export function Waves({
       <div className="absolute inset-0 w-full h-full" style={{
         mask: 'radial-gradient(ellipse at center, black 55%, transparent 95%)',
         WebkitMask: 'radial-gradient(ellipse at center, black 55%, transparent 95%)',
-        position: 'relative',
       }}>
         <canvas ref={canvasRef} className="block w-full h-full" style={{ transition: "opacity 0.5s ease-out" }} />
       </div>
