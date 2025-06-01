@@ -205,6 +205,10 @@ function FrameComponent({
                         setVideoError(true)
                       });
                     }}
+                    style={{
+                      filter: isHovered ? 'grayscale(0)' : 'grayscale(1)',
+                      transition: `filter ${CSS_VARIABLES.HIDE_DURATION_CSS} cubic-bezier(0.16, 1, 0.3, 1)`,
+                    }}
                   />
                   
                   {/* Темный оверлей (отдельно от текста) */}
