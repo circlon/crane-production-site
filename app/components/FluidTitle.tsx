@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { CyberText } from '../../components/ui/cyber-text';
 
 interface FluidTitleProps {
   text: string;
@@ -10,6 +11,10 @@ interface FluidTitleProps {
   className?: string;
   delay?: number;
   duration?: number;
+  // Новые пропсы для кинематографической системы
+  cinematicMode?: boolean;
+  intersectionReveal?: boolean;
+  intersectionThreshold?: number;
 }
 
 const FluidTitle: React.FC<FluidTitleProps> = ({
@@ -19,6 +24,9 @@ const FluidTitle: React.FC<FluidTitleProps> = ({
   className = '',
   delay = 0,
   duration = 0.5,
+  cinematicMode = false,
+  intersectionReveal = false,
+  intersectionThreshold = 0.2,
 }) => {
   const sizeClasses = {
     'xl': 'text-xl sm:text-2xl',
@@ -41,6 +49,27 @@ const FluidTitle: React.FC<FluidTitleProps> = ({
     }
   };
 
+  // Если включен кинематографический режим, используем CyberText
+  if (cinematicMode) {
+    return (
+      <CyberText
+        cinematicMode={true}
+        intersectionReveal={intersectionReveal}
+        intersectionThreshold={intersectionThreshold}
+        cinematicDelay={delay * 1000} // Конвертируем в миллисекунды
+        className={`font-bold tracking-tight ${sizeClasses[size]} ${className}`}
+        scanLineColor="rgba(255, 255, 255, 0.9)"
+        glowColor={color}
+        pixelated={false} // Для заголовков отключаем пиксели
+      >
+        <h1 style={{ color }}>
+          {text}
+        </h1>
+      </CyberText>
+    );
+  }
+
+  // Обычный режим с Framer Motion
   return (
     <motion.h1
       className={`font-bold tracking-tight ${sizeClasses[size]} ${className}`}

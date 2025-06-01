@@ -17,6 +17,11 @@ interface CyberTextProps {
   pixelFragment?: boolean; // Параметр оставлен для обратной совместимости, но не используется
   pixelSize?: number;      // Параметр оставлен для обратной совместимости, но не используется
   pixelDensity?: number;   // Параметр оставлен для обратной совместимости, но не используется
+  // Новые пропсы для единой системы анимаций
+  cinematicMode?: boolean; // Использовать единый кинематографический эффект
+  intersectionReveal?: boolean; // Активировать анимацию при входе в viewport
+  intersectionThreshold?: number; // Порог срабатывания Intersection Observer (0-1)
+  cinematicDelay?: number; // Задержка перед анимацией в миллисекундах
 }
 
 // Расширенный интерфейс для CSS-свойств с кастомными переменными
@@ -40,16 +45,23 @@ export function CyberText({
   // Эти параметры игнорируются, но сохранены для обратной совместимости
   pixelFragment = false,
   pixelSize = 6,
-  pixelDensity = 1.5
+  pixelDensity = 1.5,
+  // Новые параметры для единой системы
+  cinematicMode = false,
+  intersectionReveal = false,
+  intersectionThreshold = 0.2,
+  cinematicDelay = 0
 }: CyberTextProps) {
   // Трекинг монтирования компонента для предотвращения обновления состояния после размонтирования
   const mountedRef = useRef(true);
   const textRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const effectRef = useRef<{clean: () => void} | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const intersectionTriggeredRef = useRef(false);
 
-  const { state, isRevealing, isHiding } = useCyberReveal(isHovered, isClicked, {
-    initialState,
+  const { state, isRevealing, isHiding, forceReveal } = useCyberReveal(isHovered, isClicked, {
+    initialState: intersectionReveal ? 'hidden' : (cinematicMode ? 'revealing' : initialState),
     autoRevealDelay
   });
   
@@ -65,6 +77,46 @@ export function CyberText({
       }
     };
   }, []);
+
+  // Intersection Observer для автоматической анимации при скролле
+  useEffect(() => {
+    if (!intersectionReveal || !textRef.current) return;
+
+    const element = textRef.current;
+    
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !intersectionTriggeredRef.current) {
+            intersectionTriggeredRef.current = true;
+            
+            // Добавляем задержку перед анимацией, если указана
+            if (cinematicDelay > 0) {
+              setTimeout(() => {
+                if (mountedRef.current) {
+                  forceReveal();
+                }
+              }, cinematicDelay);
+            } else {
+              forceReveal();
+            }
+          }
+        });
+      },
+      {
+        threshold: intersectionThreshold,
+        rootMargin: '0px 0px -10% 0px' // Немного раньше срабатывания для плавности
+      }
+    );
+
+    observerRef.current.observe(element);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [intersectionReveal, intersectionThreshold, cinematicDelay, forceReveal]);
   
   // Очистка при размонтировании
   useEffect(() => {
@@ -100,13 +152,16 @@ export function CyberText({
     <div 
       ref={textRef}
       className={`relative overflow-hidden ${
-        isRevealing ? 'cyber-text-reveal' : ''
+        isRevealing ? (cinematicMode ? 'cinematic-text-wipe-reveal' : 'cyber-text-reveal') : ''
       } ${
-        isHiding ? 'cyber-text-hide' : ''
+        isHiding ? (cinematicMode ? 'cinematic-text-wipe-hide' : 'cyber-text-hide') : ''
       } ${
         pixelated ? 'cyber-text-pixelated' : ''
+      } ${
+        cinematicMode ? 'cinematic-text-wipe' : ''
       } ${className}`}
       data-cyber-state={state}
+      data-cinematic-mode={cinematicMode}
       style={baseStyles}
     >
       <div ref={contentRef} className="relative">

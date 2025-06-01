@@ -126,9 +126,15 @@ export function useCyberReveal(
     }
   }, [isHovered, state, hoverOutDelay, createTimer, clearAllTimers]);
   
+  // Функция для принудительного запуска анимации reveal
+  const forceReveal = useCallback(() => {
+    setState('revealing');
+  }, []);
+
   return {
     state,
     toggle,
+    forceReveal,
     isRevealing: state === 'revealing',
     isHiding: state === 'hiding',
     isVisible: state === 'visible',

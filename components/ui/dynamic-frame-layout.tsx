@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { VideoModal } from "./video-modal"
 import { CyberText } from "./cyber-text"
 import { ANIMATION_TIMINGS, CSS_VARIABLES } from "@/lib/constants/animation-timings"
@@ -140,7 +140,7 @@ function FrameComponent({
   return (
     <>
       <div
-        className={`relative ${className}`}
+        className={`relative grid-video-item ${className}`}
         style={{
           width,
           height,
@@ -152,6 +152,9 @@ function FrameComponent({
           className="relative w-full h-full overflow-hidden"
           onClick={handleFrameClick}
         >
+          {/* Киберпанк сканирующая линия */}
+          <div className="grid-scan-line" />
+          
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{
@@ -215,7 +218,6 @@ function FrameComponent({
                         <span className="text-2xl md:text-3xl uppercase font-display font-bold tracking-wider">
                           {title ? title : `Frame ${frameId}`}
                         </span>
-                        <div className="absolute bottom-0 left-1/4 right-1/4 h-[1px] bg-white opacity-60" />
                       </div>
                     </CyberText>
                   </div>
@@ -348,6 +350,60 @@ export function DynamicFrameLayout({
   const [hovered, setHovered] = useState<{ row: number; col: number } | null>(null)
   const [activeFrameId, setActiveFrameId] = useState<number | null>(null)
   const [discoveredState, setDiscoveredState] = useState<DiscoveredState>({})
+  const [scrollProgress, setScrollProgress] = useState(0)
+  
+  const gridRef = useRef<HTMLDivElement>(null)
+
+  // Scroll-driven анимация
+  useEffect(() => {
+    let frameId: number | null = null;
+    
+    const updateScrollProgress = () => {
+      // Находим секцию video-grid-section по ID
+      const section = document.getElementById('video-grid-section');
+      if (!section) return;
+      
+      const rect = section.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Вычисляем прогресс появления секции
+      // Начинаем анимацию когда секция появляется снизу
+      // Заканчиваем когда секция достигает верха экрана
+      const start = windowHeight; // Секция только начинает появляться
+      const end = -windowHeight * 0.2; // Секция почти ушла вверх
+      
+      // Прогресс от 0 до 1 на основе позиции верхней границы
+      const rawProgress = Math.max(0, Math.min(1, (start - rect.top) / (start - end)));
+      
+      // Сглаживание прогресса для более плавной анимации
+      const smoothProgress = rawProgress * rawProgress * (3 - 2 * rawProgress); // Smooth step
+      
+      setScrollProgress(smoothProgress);
+      
+      frameId = requestAnimationFrame(updateScrollProgress);
+    };
+    
+    const handleScroll = () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+      frameId = requestAnimationFrame(updateScrollProgress);
+    };
+    
+    // Начальная установка прогресса
+    updateScrollProgress();
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', updateScrollProgress, { passive: true });
+    
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', updateScrollProgress);
+    };
+  }, []);
 
   const getRowSizes = () => {
     if (hovered === null) return "1fr 1fr 1fr"
@@ -400,14 +456,59 @@ export function DynamicFrameLayout({
     frame
   }));
 
+  // Функция для определения прогресса анимации каждого элемента
+  const getElementProgress = (row: number, col: number, frameId: number) => {
+    // Базовый прогресс волны - нормализуем значения
+    const maxElements = 6; // У нас 6 элементов
+    const waveDelay = (row + col) * 0.08; // Диагональная волна, уменьшаем для плавности
+    const idDelay = (frameId - 1) / maxElements * 0.2; // Нормализованная задержка по ID
+    
+    // Общая задержка для этого элемента (от 0 до ~0.4)
+    const totalDelay = Math.min(0.4, waveDelay + idDelay);
+    
+    // Вычисляем прогресс конкретно для этого элемента
+    // Элемент начинает появляться после своей задержки и анимируется в течение 0.4 от общего прогресса
+    const elementProgress = Math.max(0, Math.min(1, (scrollProgress - totalDelay) / 0.4));
+    
+    return elementProgress;
+  };
+
+  // Функция для получения стилей элемента на основе прогресса скролла
+  const getItemStyle = (row: number, col: number, frameId: number) => {
+    const progress = getElementProgress(row, col, frameId);
+    
+    // Интерполяция значений на основе прогресса
+    const opacity = progress;
+    const scale = 0.3 + (progress * 0.7); // 0.3 → 1.0
+    const y = 100 - (progress * 100); // 100px → 0
+    const x = -30 + (progress * 30); // -30px → 0
+    const rotateX = -25 + (progress * 25); // -25° → 0°
+    const rotateY = 15 - (progress * 15); // 15° → 0°
+    const blur = 15 - (progress * 15); // 15px → 0
+    const brightness = 0.2 + (progress * 0.8); // 0.2 → 1.0
+    
+    return {
+      opacity,
+      transform: `
+        translateY(${y}px) 
+        translateX(${x}px) 
+        scale(${scale}) 
+        rotateX(${rotateX}deg) 
+        rotateY(${rotateY}deg)
+      `,
+      filter: `blur(${blur}px) brightness(${brightness})`,
+      boxShadow: progress > 0.8 ? '0 8px 32px rgba(0, 0, 0, 0.3)' : '0 0 0 rgba(0, 0, 0, 0)',
+      transition: 'none', // Убираем transition для плавного скролла
+    };
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
+    <div 
       className={`w-full h-full ${className}`}
+      style={{ perspective: "1000px" }}
     >
       <div 
+        ref={gridRef}
         className="w-full h-full"
         style={{
           display: "grid",
@@ -415,7 +516,6 @@ export function DynamicFrameLayout({
           gridTemplateColumns: getColSizes(),
           gap: `${gapSize}px`,
           position: "relative",
-          // Увеличиваем продолжительность анимации для более плавного эффекта
           transition: "grid-template-rows 0.8s cubic-bezier(0.16, 1, 0.3, 1), grid-template-columns 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
         onMouseLeave={handleMouseLeave}
@@ -424,6 +524,7 @@ export function DynamicFrameLayout({
         {gridData.map(({ row, col, frame }) => {
           const transformOrigin = getTransformOrigin(frame.defaultPos.x, frame.defaultPos.y);
           const isCurrentFrameHovered = hovered?.row === row && hovered?.col === col;
+          const itemStyle = getItemStyle(row, col, frame.id);
 
           return (
             <div 
@@ -432,11 +533,17 @@ export function DynamicFrameLayout({
                 gridRow: row + 1,
                 gridColumn: col + 1,
                 transformOrigin,
-                transition: "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-                transform: isCurrentFrameHovered ? 'scale(1.01)' : 'scale(1)',
                 borderRadius: '4px',
                 overflow: 'hidden',
-                boxShadow: isCurrentFrameHovered ? '0 8px 24px rgba(0, 0, 0, 0.4)' : 'none',
+                willChange: 'transform, opacity, filter',
+                // Комбинируем scroll-driven стили с hover эффектами
+                ...itemStyle,
+                // Hover эффекты поверх scroll-driven анимации
+                ...(isCurrentFrameHovered && {
+                  transform: `${itemStyle.transform} scale(1.02)`,
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }),
               }}
               onMouseEnter={() => handleMouseEnter(row, col, frame.id)}
             >
@@ -465,6 +572,6 @@ export function DynamicFrameLayout({
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 }

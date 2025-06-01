@@ -15,6 +15,7 @@ interface ScrollExpandMediaProps {
   textBlend?: boolean;
   children?: ReactNode;
   id?: string;
+  disableContentAnimation?: boolean; // Отключает встроенную анимацию контента
 }
 
 const ScrollExpandMedia = ({
@@ -27,6 +28,7 @@ const ScrollExpandMedia = ({
   textBlend,
   children,
   id,
+  disableContentAnimation = false,
 }: ScrollExpandMediaProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
@@ -346,26 +348,32 @@ const ScrollExpandMedia = ({
 
             {/* Заголовок */}
             <div
-              className={`flex items-center justify-center text-center gap-2 w-full relative z-10 flex-col overflow-hidden max-w-screen-lg mx-auto ${
+              className={`flex items-center justify-center text-center gap-2 w-full relative z-10 flex-col ${
                 textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
               }`}
             >
               <motion.h2
-                className="text-5xl md:text-6xl lg:text-7xl font-bold text-blue-200"
+                className="text-[8rem] sm:text-[10rem] md:text-[12rem] lg:text-[16rem] xl:text-[20rem] font-black text-white leading-none tracking-tight select-none"
                 style={{ 
-                  transform: `translateX(-${Math.min(textTranslateX, 100)}vw)`,
+                  transform: `translateX(-${Math.min(textTranslateX, 150)}vw)`,
                   transition: 'transform 0.3s cubic-bezier(0.33, 1, 0.68, 1)',
-                  opacity: titleOpacity
+                  opacity: titleOpacity,
+                  fontWeight: 900,
+                  textShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
+                  letterSpacing: '-0.02em'
                 }}
               >
                 {firstWord}
               </motion.h2>
               <motion.h2
-                className="text-5xl md:text-6xl lg:text-7xl font-bold text-center text-blue-200"
+                className="text-[8rem] sm:text-[10rem] md:text-[12rem] lg:text-[16rem] xl:text-[20rem] font-black text-white leading-none tracking-tight select-none text-center"
                 style={{ 
-                  transform: `translateX(${Math.min(textTranslateX, 100)}vw)`,
+                  transform: `translateX(${Math.min(textTranslateX, 150)}vw)`,
                   transition: 'transform 0.3s cubic-bezier(0.33, 1, 0.68, 1)',
-                  opacity: titleOpacity
+                  opacity: titleOpacity,
+                  fontWeight: 900,
+                  textShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
+                  letterSpacing: '-0.02em'
                 }}
               >
                 {restOfTitle}
@@ -376,7 +384,7 @@ const ScrollExpandMedia = ({
           {/* Контент секция */}
           <div
             className="flex flex-col w-full px-8 py-10 md:px-16 lg:py-20"
-            style={{ 
+            style={disableContentAnimation ? {} : { 
               opacity: contentOpacity,
               transition: 'opacity 0.3s ease-out'
             }}

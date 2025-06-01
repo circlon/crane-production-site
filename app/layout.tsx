@@ -1,31 +1,37 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Noise } from '@/components/ui/noise';
-import { Inter, Bitter, IBM_Plex_Sans, Montserrat } from 'next/font/google';
+import { Inter, JetBrains_Mono, Space_Grotesk, Manrope, Montserrat } from 'next/font/google';
 
-// Основной современный шрифт с отличной поддержкой кириллицы
+// НОВАЯ ПРЕМИАЛЬНАЯ СИСТЕМА ШРИФТОВ 2025
+// Primary Display: Аналог MURS GOTHIC - Space Grotesk (геометрический гротеск с edge)
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin', 'latin-ext'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+});
+
+// Secondary: Manrope - modern geometric sans (аналог NASTUP BASIC)
+const manrope = Manrope({
+  subsets: ['latin', 'latin-ext', 'cyrillic'],
+  display: 'swap',
+  variable: '--font-manrope',
+});
+
+// UI Elements: JetBrains Mono - clean monospace (аналог KREIS для UI)
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+});
+
+// Body Text: Inter - premium body text
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   display: 'swap',
   variable: '--font-inter',
 });
 
-// Альтернативный шрифт для заголовков
-const ibmPlexSans = IBM_Plex_Sans({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin', 'cyrillic'],
-  display: 'swap',
-  variable: '--font-ibm-plex-sans',
-});
-
-// Контрастный шрифт для акцентов
-const bitter = Bitter({
-  subsets: ['latin', 'cyrillic'],
-  display: 'swap',
-  variable: '--font-bitter',
-});
-
-// Премиальный шрифт для основных заголовков
+// Original GitHub heading font: Montserrat
 const montserrat = Montserrat({
   subsets: ['latin', 'cyrillic'],
   display: 'swap',
@@ -34,7 +40,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: 'Crane Film Site',
-  description: 'Frame Moments, Build Brands',
+      description: 'Снимаем не видео — снимаем смыслы',
 };
 
 export default function RootLayout({
@@ -43,27 +49,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className={`${inter.variable} ${ibmPlexSans.variable} ${bitter.variable} ${montserrat.variable}`}>
+    <html lang="ru" className={`${spaceGrotesk.variable} ${manrope.variable} ${jetBrainsMono.variable} ${inter.variable} ${montserrat.variable}`}>
       <body className="relative font-sans">
-        {/* Фоновый слой */}
+        {/* Фоновый слой - NOISE УБРАН */}
         <div className="background-layer fixed inset-0 z-0 overflow-hidden">
-          {/* Шумовой эффект применяется только к фоновому слою */}
-          <div className="noise-container">
-            <Noise 
-              patternAlpha={10} 
-              patternSize={300} 
-              patternRefreshInterval={4}
-              className="opacity-30"
-            />
-            <Noise 
-              patternAlpha={8} 
-              patternSize={400} 
-              patternRefreshInterval={6}
-              className="opacity-20"
-            />
-          </div>
-          
-          {/* Дополнительный фоновый контент (если нужен) */}
+          {/* Чистый чёрный фон без шума */}
           <div className="bg-black w-full h-full"></div>
         </div>
         

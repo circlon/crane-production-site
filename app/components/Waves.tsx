@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { useScroll, motion, useTransform } from "framer-motion"
-import { NoiseEffect } from './Noise';
 
 interface WavesProps {
   /**
@@ -409,9 +408,8 @@ export function Waves({
     window.addEventListener("mousemove", onMouseMove)
     window.addEventListener("touchmove", onTouchMove, { passive: true })
 
-    setTimeout(() => {
-      setIsInitialized(true)
-    }, 100)
+    // Быстрая инициализация без задержки
+    setIsInitialized(true)
 
     return () => {
       window.removeEventListener("resize", onResize)
@@ -461,12 +459,6 @@ export function Waves({
       )}
     >
       <div className="absolute inset-0 z-0">
-      <NoiseEffect 
-        patternAlpha={15} 
-        patternRefreshInterval={4} 
-        patternScaleX={1.2} 
-        patternScaleY={1.2} 
-      />
       </div>
       
       <div

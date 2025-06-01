@@ -19,9 +19,10 @@ module.exports = {
   	extend: {
   		fontFamily: {
   			sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-  			display: ['var(--font-ibm-plex-sans)', 'sans-serif'],
-  			accent: ['var(--font-bitter)', 'serif'],
-  			heading: ['var(--font-montserrat)', 'sans-serif'],
+  			display: ['var(--font-space-grotesk)', 'sans-serif'],
+  			heading: ['var(--font-manrope)', 'sans-serif'],
+  			mono: ['var(--font-jetbrains-mono)', 'monospace'],
+  			'original-heading': ['var(--font-montserrat)', 'sans-serif'],
   		},
   		colors: {
   			border: "hsl(var(--border))",
