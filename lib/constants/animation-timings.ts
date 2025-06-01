@@ -19,7 +19,7 @@ export const ANIMATION_TIMINGS = {
   CLICK_RESET_DELAY: 700,
   
   // Задержка перед появлением элемента после ухода мыши (в миллисекундах)
-  HOVER_OUT_DELAY: 700,
+  HOVER_OUT_DELAY: 0,
   
   // Интенсивность эффекта "глитча" (в пикселях)
   GLITCH_INTENSITY: 5,

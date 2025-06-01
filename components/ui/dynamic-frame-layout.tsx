@@ -9,6 +9,7 @@ import { ANIMATION_TIMINGS, CSS_VARIABLES } from "@/lib/constants/animation-timi
 interface Frame {
   id: number
   video: string
+  videos?: string[] // Массив видео для случайного выбора
   defaultPos: { x: number; y: number; w: number; h: number }
   corner: string
   edgeHorizontal: string
@@ -430,23 +431,36 @@ export function DynamicFrameLayout({
     setActiveFrameId(frameId);
     setDiscoveredState(prev => ({...prev, [frameId]: true}));
     
-    setFrames(frames.map(frame => ({
-      ...frame,
-      isHovered: frame.id === frameId
-    })));
+    setFrames(frames.map(frame => {
+      if (frame.id === frameId) {
+        // Если у фрейма есть массив videos, выбираем случайное видео
+        let selectedVideo = frame.video;
+        if (frame.videos && frame.videos.length > 0) {
+          const randomIndex = Math.floor(Math.random() * frame.videos.length);
+          selectedVideo = frame.videos[randomIndex];
+        }
+        
+        return {
+          ...frame,
+          video: selectedVideo, // Обновляем видео на случайно выбранное
+          isHovered: true
+        };
+      }
+      return {
+        ...frame,
+        isHovered: false
+      };
+    }));
   }
   
   const handleMouseLeave = () => {
-    // Add a slight delay before resetting the grid to improve the transition effect
-    setTimeout(() => {
-      setHovered(null);
-      setActiveFrameId(null);
-      
-      setFrames(frames.map(frame => ({
-        ...frame,
-        isHovered: false
-      })));
-    }, 250);
+    setHovered(null);
+    setActiveFrameId(null);
+    
+    setFrames(frames.map(frame => ({
+      ...frame,
+      isHovered: false
+    })));
   }
 
   // Создаем "сетку" с учетом позиций фреймов из данных

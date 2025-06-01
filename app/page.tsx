@@ -16,7 +16,7 @@ import './styles/fluid-animations.css';
 const frameData = [
   {
     id: 1,
-    video: '/videos/Raf New 1.mp4',
+    video: '/videos/previews/preview-1.mp4',
     defaultPos: { x: 0, y: 0, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -25,13 +25,13 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 0,
+    startTime: 0, // Теперь не используется, так как каждое видео начинается с начала
     title: 'Fitness Cinematic',
     vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=0'
   },
   {
     id: 2,
-    video: '/videos/video2.mp4',
+    video: '/videos/previews/preview-2.mp4',
     defaultPos: { x: 6, y: 0, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -40,13 +40,13 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 5,
+    startTime: 0,
     title: 'Fashion',
     vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=1'
   },
   {
     id: 3,
-    video: '/videos/video3.mp4',
+    video: '/videos/previews/preview-3.mp4',
     defaultPos: { x: 0, y: 4, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -55,13 +55,13 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 8,
+    startTime: 0,
     title: 'Личный бренд',
     vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=2'
   },
   {
     id: 4,
-    video: '/videos/video4.mp4',
+    video: '/videos/previews/preview-4.mp4',
     defaultPos: { x: 6, y: 4, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -70,13 +70,13 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 12,
+    startTime: 0,
     title: 'Презентация компаний',
     vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=3'
   },
   {
     id: 5,
-    video: '/videos/video5.mp4',
+    video: '/videos/previews/preview-5.mp4',
     defaultPos: { x: 0, y: 8, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -85,13 +85,18 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 15,
+    startTime: 0,
     title: 'Подкасты и интервью',
     vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=4'
   },
   {
     id: 6,
-    video: '/videos/video6.mp4',
+    video: '/videos/previews/reels-1.mp4', // Базовое видео
+    videos: [ // Массив всех видео для случайного выбора
+      '/videos/previews/reels-1.mp4',
+      '/videos/previews/reels-2.mp4', 
+      '/videos/previews/reels-3.mp4'
+    ],
     defaultPos: { x: 6, y: 8, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -100,7 +105,7 @@ const frameData = [
     borderThickness: 16,
     borderSize: 100,
     isHovered: false,
-    startTime: 3,
+    startTime: 0,
     title: 'Креативные Reels',
     vkVideoSrc: 'https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1&preload=1&prefer_h265=1&no_buffer_preload=1&quality=1080p&force_hd=1&playlist_id=4&index=5'
   }
@@ -252,7 +257,7 @@ export default function Home() {
             {/* Оригинальная структура FluidTitle с кинематографической анимацией */}
             <h1 
               id="main-title" 
-              className="cinematic-text-wipe font-black tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-6 transform origin-center font-original-heading text-white whitespace-nowrap"
+              className="cinematic-text-wipe font-black tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-6 transform origin-center font-display text-white whitespace-nowrap"
             >
               CRANE PRODUCTION
               <div className="cyber-scan-line"></div>
@@ -297,7 +302,7 @@ export default function Home() {
           fadeOutStart={0.85}
           animationType="slide-up"
           duration={0.25}
-          className="text-white max-w-2xl mx-auto font-sans"
+          className="text-white max-w-2xl mx-auto font-heading"
         >
           <p className="mb-6 text-lg">
             Мы креативный продакшен, который понимает, как важно любому бизнесу и эксперту продвижение в медийной сфере. 
@@ -365,7 +370,7 @@ export default function Home() {
               Наш подход
             </h2>
             
-            <div className="space-y-6 font-sans">
+            <div className="space-y-6 font-heading">
               <p className="text-lg md:text-xl leading-relaxed">
                 Мы способны создавать профессиональные видео силами небольшой команды, которое «продает» при этом оставляя комфортную стоимость для Вас, но при необходимости, всегда можем привлечь крутых специалистов в области монтажа, звукорежиссуры, графики.
               </p>
