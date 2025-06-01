@@ -91,12 +91,7 @@ const frameData = [
   },
   {
     id: 6,
-    video: '/videos/previews/reels-1.mp4', // Базовое видео
-    videos: [ // Массив всех видео для случайного выбора
-      '/videos/previews/reels-1.mp4',
-      '/videos/previews/reels-2.mp4', 
-      '/videos/previews/reels-3.mp4'
-    ],
+    video: '/videos/previews/Превью Reels.mp4',
     defaultPos: { x: 6, y: 8, w: 6, h: 4 },
     corner: '/images/frames/corner.png',
     edgeHorizontal: '/images/frames/edge-h.png',
@@ -290,7 +285,7 @@ export default function Home() {
       {/* Scroll Expand Media Section */}
       <ScrollExpandMedia
         mediaType="video"
-        mediaSrc="/videos/Raf New 1.mp4"
+        mediaSrc="/videos/ПРЕВЬЮ SHOWREEL.mp4"
         bgImageSrc=""
         title="О НАС"
         textBlend={true}

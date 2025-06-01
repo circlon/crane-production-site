@@ -96,15 +96,20 @@ function FrameComponent({
   
   // Управляем локальными видео через useEffect
   useEffect(() => {
+    // Всегда пытаемся запустить видео при загрузке компонента
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {
+        setVideoError(true)
+      });
+    }
+  }, [video]);
+
+  // Анимация при наведении
+  useEffect(() => {
     if (isHovered) {
       setIsAnimating(true);
-      // Воспроизводим только локальные видео (не VK)
-      videoRef.current?.play().catch(() => {
-        setVideoError(true)
-      })
     } else {
       setIsAnimating(false);
-      videoRef.current?.pause();
     }
   }, [isHovered]);
 
@@ -187,21 +192,28 @@ function FrameComponent({
                     className="w-full h-full object-cover relative z-1"
                     src={video}
                     poster={poster || defaultPoster}
+                    autoPlay
                     loop
                     muted
                     playsInline
                     preload="auto"
                     ref={videoRef}
                     onError={() => setVideoError(true)}
+                    onLoadedData={() => {
+                      // Пытаемся запустить видео при загрузке данных
+                      videoRef.current?.play().catch(() => {
+                        setVideoError(true)
+                      });
+                    }}
                   />
                   
                   {/* Темный оверлей (отдельно от текста) */}
                   <div 
-                    className="absolute inset-0 bg-gradient-to-br from-black/70 to-black/50 pointer-events-none z-10"
+                    className="absolute inset-0 bg-gradient-to-br from-black/80 to-black/70 pointer-events-none z-10"
                     style={{
-                      opacity: isHovered ? 0 : 0.3,
+                      opacity: isHovered ? 0 : 0.6,
                       transition: `opacity ${CSS_VARIABLES.HIDE_DURATION_CSS} cubic-bezier(0.16, 1, 0.3, 1)`,
-                      backdropFilter: "blur(2px)",
+                      backdropFilter: "blur(1px)",
                       mixBlendMode: "multiply", // Allows the noise to show through
                     }}
                   />
