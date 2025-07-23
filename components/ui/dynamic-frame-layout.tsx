@@ -45,6 +45,7 @@ interface FrameComponentProps {
   vkVideoSrc?: string
   poster?: string
   onVideoClick?: (videoId: number) => void
+  // Animation props (removed - using scroll-driven only)
 }
 
 function FrameComponent({
@@ -68,6 +69,7 @@ function FrameComponent({
   vkVideoSrc,
   poster,
   onVideoClick,
+
 }: FrameComponentProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoError, setVideoError] = useState(false)
@@ -143,9 +145,32 @@ function FrameComponent({
   // Дефолтный постер для всех видео
   const defaultPoster = '/images/frames/video-poster-default.jpg';
 
+  // Animation variants for individual frames
+  const frameVariants = {
+    hidden: {
+      opacity: 0,
+      scale: 0.8,
+      y: 50,
+      rotateX: -15,
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      rotateX: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+        type: "spring",
+        stiffness: 100,
+        damping: 12
+      }
+    }
+  };
+
   return (
     <>
-      <div
+      <motion.div
         className={`relative grid-video-item ${className}`}
         style={{
           width,
@@ -153,6 +178,14 @@ function FrameComponent({
           transition: "width 0.3s ease-in-out, height 0.3s ease-in-out",
         }}
         data-video-frame="true"
+        variants={frameVariants}
+        initial="visible"
+        animate="visible"
+        whileHover={{
+          scale: 1.02,
+          y: -5,
+          transition: { duration: 0.2 }
+        }}
       >
         <div 
           className="relative w-full h-full overflow-hidden"
@@ -186,7 +219,7 @@ function FrameComponent({
                   <p>Video not available</p>
                 </div>
               ) : (
-                <>
+                <div className="relative w-full h-full">
                   <div className="absolute inset-0 bg-black/80"></div>
                   <video
                     className="w-full h-full object-cover relative z-1"
@@ -238,7 +271,7 @@ function FrameComponent({
                       </div>
                     </CyberText>
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -246,7 +279,7 @@ function FrameComponent({
           {showFrame && (
             <div className="absolute inset-0" style={{ zIndex: 2 }}>
               {/* Добавляем прозрачную область для видимости шума между элементами рамки */}
-              <div className="absolute inset-16 bg-transparent"></div>
+              <div className="absolute inset-16 bg-transparent" />
               
               <div
                 className="absolute top-0 left-0 w-16 h-16 bg-contain bg-no-repeat"
@@ -329,7 +362,7 @@ function FrameComponent({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
       
       {/* Модальное окно */}
       {isModalOpen && vkVideoSrc && (
@@ -597,6 +630,7 @@ export function DynamicFrameLayout({
                 isDiscovered={!!discoveredState[frame.id]}
                 vkVideoSrc={frame.vkVideoSrc}
                 onVideoClick={onVideoClick}
+
               />
             </div>
           );

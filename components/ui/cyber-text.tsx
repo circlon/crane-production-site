@@ -22,6 +22,11 @@ interface CyberTextProps {
   intersectionReveal?: boolean; // Активировать анимацию при входе в viewport
   intersectionThreshold?: number; // Порог срабатывания Intersection Observer (0-1)
   cinematicDelay?: number; // Задержка перед анимацией в миллисекундах
+  // Shader-подобные эффекты
+  shaderEffect?: 'gradient' | 'wipe' | 'holographic' | 'wave' | 'combined' | 'none'; // Тип shader эффекта
+  gradientColors?: string[]; // Кастомные цвета для градиента
+  animationSpeed?: 'slow' | 'normal' | 'fast'; // Скорость анимации
+  intensityLevel?: 'subtle' | 'normal' | 'intense'; // Интенсивность эффекта
 }
 
 // Расширенный интерфейс для CSS-свойств с кастомными переменными
@@ -50,7 +55,12 @@ export function CyberText({
   cinematicMode = false,
   intersectionReveal = false,
   intersectionThreshold = 0.2,
-  cinematicDelay = 0
+  cinematicDelay = 0,
+  // Shader-эффекты
+  shaderEffect = 'none',
+  gradientColors,
+  animationSpeed = 'normal',
+  intensityLevel = 'normal'
 }: CyberTextProps) {
   // Трекинг монтирования компонента для предотвращения обновления состояния после размонтирования
   const mountedRef = useRef(true);
@@ -125,9 +135,13 @@ export function CyberText({
     };
   }, []);
   
-  // Если текст скрыт, не рендерим его вообще
+  // Если текст скрыт, рендерим прозрачно чтобы intersection observer работал
   if (state === 'hidden') {
-    return null;
+    return (
+      <div style={{ opacity: 0, pointerEvents: 'none' }} className={className}>
+        {children}
+      </div>
+    );
   }
   
   // Получаем базовые CSS-переменные из утилиты
@@ -148,15 +162,67 @@ export function CyberText({
     baseStyles['letterSpacing'] = '1px';
   }
   
+  // Настройки скорости shader-анимаций
+  const speedMultiplier = animationSpeed === 'slow' ? 1.5 : animationSpeed === 'fast' ? 0.7 : 1;
+  baseStyles['--shader-gradient-speed'] = `${3 * speedMultiplier}s`;
+  
+  // Интенсивность эффектов
+  if (intensityLevel === 'subtle') {
+    baseStyles['--shader-holographic-shift'] = '1px';
+    baseStyles['--shader-distortion-strength'] = '2px';
+  } else if (intensityLevel === 'intense') {
+    baseStyles['--shader-holographic-shift'] = '4px';
+    baseStyles['--shader-distortion-strength'] = '8px';
+  }
+  
+  // Кастомные цвета градиента
+  if (gradientColors && gradientColors.length >= 2) {
+    const gradientString = gradientColors.join(', ');
+    baseStyles['--custom-gradient'] = `linear-gradient(45deg, ${gradientString})`;
+  }
+  
+  // Функция для получения shader CSS классов
+  const getShaderClasses = () => {
+    const classes = [];
+    
+    switch (shaderEffect) {
+      case 'gradient':
+        classes.push('shader-text-gradient');
+        break;
+      case 'wipe':
+        classes.push('shader-wipe-reveal');
+        break;
+      case 'holographic':
+        classes.push('shader-holographic');
+        break;
+      case 'wave':
+        classes.push('shader-wave-distortion');
+        break;
+      case 'combined':
+        classes.push('shader-title-effect', 'shader-text-gradient', 'shader-holographic');
+        break;
+      default:
+        break;
+    }
+    
+    return classes.join(' ');
+  };
+  
+  // Получаем текстовое содержимое для data-text атрибута
+  const textContent = typeof children === 'string' ? children : '';
+
   return (
     <div 
       ref={textRef}
+      data-text={shaderEffect === 'combined' ? textContent : undefined}
       className={`relative overflow-hidden ${
         isRevealing ? (cinematicMode ? 'cinematic-text-wipe-reveal' : 'cyber-text-reveal') : ''
       } ${
         isHiding ? (cinematicMode ? 'cinematic-text-wipe-hide' : 'cyber-text-hide') : ''
       } ${
         pixelated ? 'cyber-text-pixelated' : ''
+      } ${
+        getShaderClasses()
       } ${
         cinematicMode ? 'cinematic-text-wipe' : ''
       } ${className}`}

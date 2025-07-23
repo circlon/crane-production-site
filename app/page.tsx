@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { Waves } from './components/Waves';
-import { DynamicFrameLayout } from '../components/ui/dynamic-frame-layout';
-import { CyberText } from '../components/ui/cyber-text';
 import ScrollExpandMedia from './components/ScrollExpandMedia';
 import FluidTitle from './components/FluidTitle';
 import ScrollIndicator from './components/ScrollIndicator';
 import ScrollText from '../components/ui/scroll-text';
 
-import VideoModal from './components/VideoModal';
-import TelegramModal from './components/TelegramModal';
+
+import ContactForm from './components/ContactForm';
+import InlineContactForm from './components/InlineContactForm';
+import AnimatedDirectionsSection from './components/AnimatedDirectionsSection';
+import { VideoCollectionBlock } from '../components/ui/video-collection-block';
 import './styles/fluid-animations.css';
 
 const frameData = [
@@ -107,34 +108,29 @@ const frameData = [
 ];
 
 export default function Home() {
-  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showTelegramModal, setShowTelegramModal] = useState(false);
-  
-  // Find the active video from frameData
-  const activeVideo = activeVideoId !== null 
-    ? frameData.find(frame => frame.id === activeVideoId) 
-    : null;
+  const [showContactForm, setShowContactForm] = useState(false);
 
   // Handle video click events
   const handleVideoClick = (videoId: number) => {
-    setActiveVideoId(videoId);
-    setShowModal(true);
+    // Навигация к секции VK видео
+    const vkVideosSection = document.getElementById('vk-videos-section');
+    if (vkVideosSection) {
+      vkVideosSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   };
 
-  // Close the modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  // Handle Telegram modal
+  // Handle Contact Form
   const handleTelegramClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setShowTelegramModal(true);
+    e.stopPropagation();
+    setShowContactForm(true);
   };
 
   const handleCloseTelegramModal = () => {
-    setShowTelegramModal(false);
+    setShowContactForm(false);
   };
 
   useEffect(() => {
@@ -172,14 +168,29 @@ export default function Home() {
       const subtitleElement = document.getElementById('main-subtitle');
       
       if (titleElement && subtitleElement) {
+        // Функция очистки анимационных стилей после завершения
+        const cleanupAnimation = (element: HTMLElement) => {
+          element.addEventListener('animationend', () => {
+            // Удаляем анимационные классы
+            element.classList.remove('cinematic-text-wipe-reveal', 'cinematic-text-wipe');
+            // Очищаем анимационные стили вручную
+            element.style.clipPath = '';
+            element.style.overflow = '';
+            element.style.animation = '';
+            element.style.textShadow = '';
+          }, { once: true });
+        };
+
         // Минимальная задержка только для завершения DOM
         requestAnimationFrame(() => {
           // Заголовок появляется сразу
           titleElement.classList.add('cinematic-text-wipe-reveal');
+          cleanupAnimation(titleElement);
           
           // Подзаголовок появляется с небольшой задержкой для эффекта последовательности
           setTimeout(() => {
             subtitleElement.classList.add('cinematic-text-wipe-reveal');
+            cleanupAnimation(subtitleElement);
           }, 600); // Задержка для красивой последовательности
         });
       }
@@ -218,18 +229,10 @@ export default function Home() {
               
               {/* Социальные сети */}
               <div className="flex space-x-4">
-                <a href="https://vkvideo.ru/@club229245500/playlists" target="_blank" rel="noopener noreferrer" className="group">
+                <button type="button" onClick={handleTelegramClick} className="group">
                   <div className="w-10 h-10 rounded-full bg-zinc-900/70 backdrop-blur-sm flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800/50">
                     <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12.145 15.84C7.77 15.84 5.29 12.86 5.17 7.95H7.29C7.37 11.62 8.97 13.23 10.24 13.53V7.95H12.23V11.2C13.49 11.06 14.8 9.56 15.25 7.95H17.24C16.9 9.98 15.47 11.48 14.45 12.08C15.47 12.57 17.09 13.89 17.74 15.84H15.53C15.01 14.49 13.81 13.26 12.23 13.09V15.84H12.145Z" fill="currentColor"/>
-                    </svg>
-                  </div>
-                </a>
-                
-                <button onClick={handleTelegramClick} className="group">
-                  <div className="w-10 h-10 rounded-full bg-zinc-900/70 backdrop-blur-sm flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800/50">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18.92 6.01L4.77 11.35C4.23 11.55 4.24 11.84 4.67 11.96L8.18 13.06L16.5 7.94C16.76 7.78 16.99 7.87 16.81 8.04L10.07 14.08H10.06L10.07 14.09L9.92 17.7C10.16 17.7 10.27 17.59 10.41 17.45L12.12 15.79L15.67 18.42C16.11 18.67 16.43 18.54 16.54 18.02L18.94 6.79C19.09 6.16 18.69 5.86 18.92 6.01Z" fill="currentColor"/>
+                      <path d="M3 8L10.89 13.26C11.2 13.46 11.4 13.46 11.71 13.26L19.6 8M5 19H19C20.1 19 21 18.1 21 17V7C21 5.9 20.1 5 19 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                 </button>
@@ -299,56 +302,29 @@ export default function Home() {
           duration={0.25}
           className="text-white max-w-2xl mx-auto font-heading"
         >
-          <p className="mb-6 text-lg">
+          <p className="mb-6 text-xl md:text-2xl">
             Мы креативный продакшен, который понимает, как важно любому бизнесу и эксперту продвижение в медийной сфере. 
             Мы умеем создавать крутые видео, которые зацепят вашего зрителя и потенциального клиента.
           </p>
-          <p className="text-lg">
+          <p className="text-xl md:text-2xl">
             Мы изучаем ваш бизнес и экспертность, чтобы создать лучшие условия видеопроизводства. 
             Наш подход - рушить привычные шаблоны съемки и монтажа и научиться выделяться среди огромной массы видео.
           </p>
         </ScrollText>
       </ScrollExpandMedia>
 
-      {/* Video Frame Grid section */}
-      <section id="video-grid-section" className="flex flex-col items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm min-h-screen py-16 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40 z-0"></div>
-        <CyberText
-          cinematicMode={true}
-          intersectionReveal={true}
-          intersectionThreshold={0.4}
-          cinematicDelay={300}
-          className="text-3xl md:text-5xl font-bold text-white mb-12 text-center relative z-10 uppercase font-display tracking-wider"
-          scanLineColor="rgba(255, 255, 255, 0.9)"
-          pixelated={false}
-        >
-          <h2>Наши направления</h2>
-        </CyberText>
-        <div className="w-full max-w-[94%] lg:max-w-[90%] mx-auto h-[85vh] px-4 relative z-10 video-grid-container">
-          <DynamicFrameLayout 
-            frames={frameData} 
-            showFrames={false}
-            hoverSize={6}
-            gapSize={16}
-            onVideoClick={handleVideoClick}
-          />
-        </div>
-      </section>
+      {/* Animated Video Frame Grid section */}
+      <AnimatedDirectionsSection 
+        frameData={frameData}
+        onVideoClick={handleVideoClick}
+      />
 
-      {/* Video Modal */}
-      {activeVideo && (
-        <VideoModal 
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          videoSrc={activeVideo.vkVideoSrc || `https://vkvideo.ru/video_ext.php?oid=-229245500&id=456239047&hd=2&autoplay=1`}
-        />
-      )}
 
-      {/* Telegram Modal */}
-      <TelegramModal 
-        isOpen={showTelegramModal}
+
+      {/* Contact Form */}
+      <ContactForm 
+        isOpen={showContactForm}
         onClose={handleCloseTelegramModal}
-        telegramUsername="crane_film"
       />
 
       {/* Подход */}
@@ -366,11 +342,11 @@ export default function Home() {
             </h2>
             
             <div className="space-y-6 font-heading">
-              <p className="text-lg md:text-xl leading-relaxed">
+              <p className="text-xl md:text-2xl leading-relaxed">
                 Мы способны создавать профессиональные видео силами небольшой команды, которое «продает» при этом оставляя комфортную стоимость для Вас, но при необходимости, всегда можем привлечь крутых специалистов в области монтажа, звукорежиссуры, графики.
               </p>
               
-              <p className="text-lg md:text-xl leading-relaxed">
+              <p className="text-xl md:text-2xl leading-relaxed">
                 Видео - это и про творчество, поэтому мы создаем классную и дружественную атмосферу на съемках, потому что хотим кайфовать от процесса и результата.
               </p>
             </div>
@@ -378,34 +354,33 @@ export default function Home() {
         </div>
       </section>
 
+      {/* VK Video Collection */}
+      <section id="vk-videos-section">
+        <VideoCollectionBlock className="bg-gradient-to-b from-black/90 to-black/95" />
+      </section>
+
       {/* Контакты */}
       <section id="contacts-section" className="py-40 bg-gradient-to-b from-black/70 to-black/90 relative">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 font-display uppercase tracking-wider">
-            Свяжитесь с нами
-          </h2>
-          
-          <p className="text-xl text-gray-200 mb-12 font-sans">
-            Расскажите о задаче — предложим решение
-          </p>
-          
-          <div className="flex justify-center space-x-10">
-            <a href="https://vkvideo.ru/@club229245500/playlists" target="_blank" rel="noopener noreferrer" className="group">
-              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800">
-                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12.145 15.84C7.77 15.84 5.29 12.86 5.17 7.95H7.29C7.37 11.62 8.97 13.23 10.24 13.53V7.95H12.23V11.2C13.49 11.06 14.8 9.56 15.25 7.95H17.24C16.9 9.98 15.47 11.48 14.45 12.08C15.47 12.57 17.09 13.89 17.74 15.84H15.53C15.01 14.49 13.81 13.26 12.23 13.09V15.84H12.145Z" fill="currentColor"/>
-                </svg>
-              </div>
-            </a>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <FluidTitle
+              text="Свяжитесь с нами"
+              size="4xl"
+              className="mb-8 font-display uppercase tracking-wider"
+              shaderEffect="gradient"
+              animationSpeed="normal"
+              intensityLevel="normal"
+              intersectionReveal={true}
+              intersectionThreshold={0.3}
+              gradientColors={['#ff0080', '#ff8c00', '#40e0d0', '#0080ff']}
+            />
             
-            <button onClick={handleTelegramClick} className="group">
-              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center group-hover:bg-zinc-800 transition-all duration-300 border border-zinc-800">
-                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18.92 6.01L4.77 11.35C4.23 11.55 4.24 11.84 4.67 11.96L8.18 13.06L16.5 7.94C16.76 7.78 16.99 7.87 16.81 8.04L10.07 14.08H10.06L10.07 14.09L9.92 17.7C10.16 17.7 10.27 17.59 10.41 17.45L12.12 15.79L15.67 18.42C16.11 18.67 16.43 18.54 16.54 18.02L18.94 6.79C19.09 6.16 18.69 5.86 18.92 6.01Z" fill="currentColor"/>
-                </svg>
-              </div>
-            </button>
+            <p className="text-xl text-gray-200 font-sans">
+              Расскажите о задаче — предложим решение
+            </p>
           </div>
+          
+          <InlineContactForm />
         </div>
       </section>
     </main>

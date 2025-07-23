@@ -15,6 +15,11 @@ interface FluidTitleProps {
   cinematicMode?: boolean;
   intersectionReveal?: boolean;
   intersectionThreshold?: number;
+  // Shader-эффекты
+  shaderEffect?: 'gradient' | 'wipe' | 'holographic' | 'wave' | 'combined' | 'none';
+  gradientColors?: string[];
+  animationSpeed?: 'slow' | 'normal' | 'fast';
+  intensityLevel?: 'subtle' | 'normal' | 'intense';
 }
 
 const FluidTitle: React.FC<FluidTitleProps> = ({
@@ -27,6 +32,10 @@ const FluidTitle: React.FC<FluidTitleProps> = ({
   cinematicMode = false,
   intersectionReveal = false,
   intersectionThreshold = 0.2,
+  shaderEffect = 'none',
+  gradientColors,
+  animationSpeed = 'normal',
+  intensityLevel = 'normal',
 }) => {
   const sizeClasses = {
     'xl': 'text-xl sm:text-2xl',
@@ -49,11 +58,11 @@ const FluidTitle: React.FC<FluidTitleProps> = ({
     }
   };
 
-  // Если включен кинематографический режим, используем CyberText
-  if (cinematicMode) {
+  // Если включен кинематографический режим или shader-эффекты, используем CyberText
+  if (cinematicMode || shaderEffect !== 'none') {
     return (
       <CyberText
-        cinematicMode={true}
+        cinematicMode={cinematicMode}
         intersectionReveal={intersectionReveal}
         intersectionThreshold={intersectionThreshold}
         cinematicDelay={delay * 1000} // Конвертируем в миллисекунды
@@ -61,6 +70,11 @@ const FluidTitle: React.FC<FluidTitleProps> = ({
         scanLineColor="rgba(255, 255, 255, 0.9)"
         glowColor={color}
         pixelated={false} // Для заголовков отключаем пиксели
+        // Новые shader-параметры
+        shaderEffect={shaderEffect}
+        gradientColors={gradientColors}
+        animationSpeed={animationSpeed}
+        intensityLevel={intensityLevel}
       >
         <h1 style={{ color }}>
           {text}

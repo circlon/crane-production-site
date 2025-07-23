@@ -1,0 +1,172 @@
+{
+  "timestamp": "2025-07-19T15:40:02.369Z",
+  "method": "automated-vk-parsing",
+  "playlists": [
+    {
+      "playlistId": "-229245500_4",
+      "playlistTitle": "Презентация Компаний",
+      "videos": [
+        {
+          "id": "229245500_456239045",
+          "title": "1:24",
+          "href": "https://vkvideo.ru/playlist/-229245500_4/video-229245500_456239045",
+          "method": "link-parsing"
+        },
+        {
+          "id": "-229245500_456239045",
+          "title": "Видео -229245500_456239045",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_4",
+          "title": "Видео -229245500_4",
+          "method": "json-parsing"
+        }
+      ],
+      "pageTitle": "Презентация Компаний | VK Видео",
+      "currentUrl": "https://vkvideo.ru/playlist/-229245500_4"
+    },
+    {
+      "playlistId": "-229245500_3",
+      "playlistTitle": "Личный бренд",
+      "videos": [
+        {
+          "id": "229245500_456239051",
+          "title": "1:00",
+          "href": "https://vkvideo.ru/playlist/-229245500_3/video-229245500_456239051",
+          "method": "link-parsing"
+        },
+        {
+          "id": "229245500_456239049",
+          "title": "0:28",
+          "href": "https://vkvideo.ru/playlist/-229245500_3/video-229245500_456239049",
+          "method": "link-parsing"
+        },
+        {
+          "id": "229245500_456239050",
+          "title": "0:14",
+          "href": "https://vkvideo.ru/playlist/-229245500_3/video-229245500_456239050",
+          "method": "link-parsing"
+        },
+        {
+          "id": "-229245500_456239051",
+          "title": "Видео -229245500_456239051",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_3",
+          "title": "Видео -229245500_3",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_456239049",
+          "title": "Видео -229245500_456239049",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_456239050",
+          "title": "Видео -229245500_456239050",
+          "method": "json-parsing"
+        }
+      ],
+      "pageTitle": "Личный бренд | VK Видео",
+      "currentUrl": "https://vkvideo.ru/playlist/-229245500_3"
+    },
+    {
+      "playlistId": "-229245500_2",
+      "playlistTitle": "Fashion",
+      "videos": [
+        {
+          "id": "229245500_456239043",
+          "title": "0:46",
+          "href": "https://vkvideo.ru/playlist/-229245500_2/video-229245500_456239043",
+          "method": "link-parsing"
+        },
+        {
+          "id": "-229245500_456239043",
+          "title": "Видео -229245500_456239043",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_2",
+          "title": "Видео -229245500_2",
+          "method": "json-parsing"
+        }
+      ],
+      "pageTitle": "Fashion | VK Видео",
+      "currentUrl": "https://vkvideo.ru/playlist/-229245500_2"
+    },
+    {
+      "playlistId": "-229245500_1",
+      "playlistTitle": "Sport",
+      "videos": [
+        {
+          "id": "229245500_456239048",
+          "title": "0:48",
+          "href": "https://vkvideo.ru/playlist/-229245500_1/video-229245500_456239048",
+          "method": "link-parsing"
+        },
+        {
+          "id": "229245500_456239041",
+          "title": "1:06",
+          "href": "https://vkvideo.ru/playlist/-229245500_1/video-229245500_456239041",
+          "method": "link-parsing"
+        },
+        {
+          "id": "229245500_456239042",
+          "title": "1:21",
+          "href": "https://vkvideo.ru/playlist/-229245500_1/video-229245500_456239042",
+          "method": "link-parsing"
+        },
+        {
+          "id": "229245500_456239046",
+          "title": "0:37",
+          "href": "https://vkvideo.ru/playlist/-229245500_1/video-229245500_456239046",
+          "method": "link-parsing"
+        },
+        {
+          "id": "229245500_456239047",
+          "title": "0:50",
+          "href": "https://vkvideo.ru/playlist/-229245500_1/video-229245500_456239047",
+          "method": "link-parsing"
+        },
+        {
+          "id": "-229245500_456239048",
+          "title": "Видео -229245500_456239048",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_1",
+          "title": "Видео -229245500_1",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_456239041",
+          "title": "Видео -229245500_456239041",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_456239042",
+          "title": "Видео -229245500_456239042",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_456239046",
+          "title": "Видео -229245500_456239046",
+          "method": "json-parsing"
+        },
+        {
+          "id": "-229245500_456239047",
+          "title": "Видео -229245500_456239047",
+          "method": "json-parsing"
+        }
+      ],
+      "pageTitle": "Sport | VK Видео",
+      "currentUrl": "https://vkvideo.ru/playlist/-229245500_1"
+    }
+  ],
+  "summary": {
+    "totalPlaylists": 4,
+    "totalVideos": 24
+  }
+}

@@ -1,0 +1,14 @@
+backup-dead-code/BACKUP_LIST.txt
+backup-dead-code/app/data/frame-data.ts
+backup-dead-code/app/styles/transitions.css
+backup-dead-code/app/styles/wave-transitions.css
+backup-dead-code/components/ui/cinematic-title.tsx
+backup-dead-code/components/ui/image/video-collection-block/1752938688565.png
+backup-dead-code/components/ui/image/video-collection-block/1752938744903.png
+backup-dead-code/docs/FONT_SYSTEM.md
+backup-dead-code/docs/GRID_ANIMATION_SUMMARY.md
+backup-dead-code/docs/PROJECT_MAP.md
+backup-dead-code/docs/VIDEO_STRUCTURE.md
+backup-dead-code/lib/hooks/useVKVideoControl.ts
+backup-dead-code/standalone/club_page.html
+backup-dead-code/standalone/test-cinematic.html

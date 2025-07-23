@@ -154,6 +154,11 @@ html, body {
   pointer-events: auto;
 }
 
+/* Radial gradient utility */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
 /* Видео-контейнеры уже находятся на верхнем контентном слое,
    поэтому им не нужны специальные z-index */
 video, iframe {
